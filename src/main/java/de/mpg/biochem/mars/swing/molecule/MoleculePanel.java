@@ -77,14 +77,15 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
 
-import org.decimal4j.util.DoubleRounder;
+//import org.decimal4j.util.DoubleRounder;
 import org.scijava.log.LogService;
 
 import de.mpg.biochem.mars.swing.plot.BoundsChangedListener;
 import de.mpg.biochem.mars.swing.plot.CurvePlot;
 import de.mpg.biochem.mars.swing.plot.PlotPanel;
 import de.mpg.biochem.mars.swing.plot.PlotProperties;
-import de.mpg.biochem.mars.swing.table.MARSResultsTable;
+import de.mpg.biochem.mars.table.MARSResultsTable;
+import de.mpg.biochem.mars.molecule.*;
 import ij.ImagePlus;
 import ij.gui.ImageCanvas;
 import ij.gui.ImageLayout;

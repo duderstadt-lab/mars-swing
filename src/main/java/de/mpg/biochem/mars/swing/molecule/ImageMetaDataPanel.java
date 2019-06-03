@@ -63,7 +63,8 @@ import org.scijava.table.DoubleColumn;
 import org.scijava.table.GenericColumn;
 
 import de.mpg.biochem.mars.swing.molecule.MoleculePanel.DecimalFormatRenderer;
-import de.mpg.biochem.mars.swing.table.MARSResultsTable;
+import de.mpg.biochem.mars.table.*;
+import de.mpg.biochem.mars.molecule.*;
 
 public class ImageMetaDataPanel extends JPanel {
 	private MARSImageMetaData imageMetaData;
