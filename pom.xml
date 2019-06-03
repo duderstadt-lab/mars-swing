@@ -94,10 +94,6 @@
 	
 	<dependencies>
 		<dependency>
-			<groupId>net.imglib2</groupId>
-			<artifactId>imglib2-ij</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>net.imagej</groupId>
 			<artifactId>imagej</artifactId>
 		</dependency>
@@ -106,43 +102,9 @@
 			<artifactId>fiji-lib</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
-			<version>2.6.5</version>
-		</dependency>
-		<dependency>
-    		<groupId>com.fasterxml.jackson.core</groupId>
-    		<artifactId>jackson-annotations</artifactId>
-   			<version>2.6.0</version>
-  		</dependency>
-  		<dependency>
-    		<groupId>com.fasterxml.jackson.core</groupId>
-    		<artifactId>jackson-core</artifactId>
-   			 <version>2.6.5</version>
-  		</dependency>
-		<dependency>
-			<groupId>org.apache.directory.studio</groupId>
-			<artifactId>org.apache.commons.codec</artifactId>
-			<version>1.8</version>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.dataformat</groupId>
-			<artifactId>jackson-dataformat-smile</artifactId>
-			<version>2.6.5</version>
-		</dependency>
-		<dependency>
-			<groupId>com.chrylis</groupId>
-			<artifactId>base58-codec</artifactId>
-			<version>1.2.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.decimal4j</groupId>
-			<artifactId>decimal4j</artifactId>
-			<version>1.0.3</version>
-		</dependency>
-		<dependency>
-			<groupId>commons-io</groupId>
-			<artifactId>commons-io</artifactId>
+			<groupId>de.mpg.biochem</groupId>
+			<artifactId>mars-core</artifactId>
+			<version>1.0.0-SNAPSHOT-beta1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.scijava</groupId>

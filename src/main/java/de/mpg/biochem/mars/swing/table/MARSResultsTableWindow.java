@@ -63,6 +63,7 @@ import org.scijava.table.*;
 import org.scijava.ui.UIService;
 
 import de.mpg.biochem.mars.swing.plot.*;
+import de.mpg.biochem.mars.table.*;
 
 public class MARSResultsTableWindow implements ActionListener {
 	MARSResultsTable results;
