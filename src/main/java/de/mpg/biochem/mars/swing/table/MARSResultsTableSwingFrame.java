@@ -65,7 +65,7 @@ import org.scijava.ui.UIService;
 import de.mpg.biochem.mars.swing.plot.*;
 import de.mpg.biochem.mars.table.*;
 
-public class MARSResultsTableWindow implements ActionListener {
+public class MARSResultsTableSwingFrame implements ActionListener, MARSResultsTableWindow {
 	MARSResultsTable results;
 	
 	@Parameter
@@ -96,7 +96,7 @@ public class MARSResultsTableWindow implements ActionListener {
 	static int pos_y = 130;
 	static int offsetX = 0;
 	
-	public MARSResultsTableWindow(String name, MARSResultsTable results, ResultsTableService resultsTableService) {
+	public MARSResultsTableSwingFrame(String name, MARSResultsTable results, ResultsTableService resultsTableService) {
 		this.results = results;
 		this.resultsTableService = resultsTableService;
 		this.uiService = resultsTableService.getUIService();

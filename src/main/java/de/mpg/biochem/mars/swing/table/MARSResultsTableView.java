@@ -60,7 +60,7 @@ public class MARSResultsTableView extends AbstractDisplayViewer<MARSResultsTable
 		d.setName(results.getName());
 		
 		//We also create a new window since we assume it is a new table...
-		new MARSResultsTableWindow(results.getName(), results, resultsTableService);
+		new MARSResultsTableSwingFrame(results.getName(), results, resultsTableService);
 	}
 
 	@Override

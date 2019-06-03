@@ -186,8 +186,8 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
     	//We could just update the selected tab but it probably doesn't matter much.
 		propertiesTabs = archiveProperties();
 		tabbedPane.setComponentAt(0, propertiesTabs);
-        imageMetaDataPanel.update();
-        moleculePanel.update();
+        imageMetaDataPanel.updateAll();
+        moleculePanel.updateAll();
         comments.setText(archive.getComments());
 	}
 	
@@ -471,7 +471,7 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 		            	 archive.remove(UID);
 		             }
 		             
-		     		 moleculePanel.update();
+		     		 moleculePanel.updateAll();
 	        	 }
 	          }
 	       });
@@ -511,7 +511,7 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 			            	 	archive.put(molecule);
 			     			});
 			             
-			     		 moleculePanel.update();
+			     		 moleculePanel.updateAll();
 		        	 }
 	          }
 	       });
@@ -551,7 +551,7 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 			            	 	archive.put(molecule);
 			     			});
 			             
-			     		 moleculePanel.update();
+			     		 moleculePanel.updateAll();
 		        	 }
 	          }
 	       });
@@ -616,7 +616,7 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 		            archive.get(mergeUIDs.get(0)).setNotes(archive.get(mergeUIDs.get(0)).getNotes() + "\n" + mergeNote);
 		            
 		            
-		     		moleculePanel.update();
+		     		moleculePanel.updateAll();
 	        	 }
 	          }
 	       });
