@@ -46,8 +46,8 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import de.mpg.biochem.mars.swing.molecule.Molecule;
-import de.mpg.biochem.mars.swing.table.MARSResultsTable;
+import de.mpg.biochem.mars.molecule.Molecule;
+import de.mpg.biochem.mars.table.MARSResultsTable;
 
 public class PlotPanel extends JPanel {
 	private static final long serialVersionUID = 1L;

@@ -93,7 +93,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import de.mpg.biochem.mars.swing.molecule.Molecule;
+import de.mpg.biochem.mars.molecule.Molecule;
 import de.mpg.biochem.mars.swing.molecule.MoleculeChangedListener;
 import ij.gui.GenericDialog;
 import ij.IJ;

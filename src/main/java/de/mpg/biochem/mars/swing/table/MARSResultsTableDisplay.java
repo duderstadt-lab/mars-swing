@@ -32,6 +32,7 @@ import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
 import ij.text.TextWindow;
+import de.mpg.biochem.mars.table.*;
 
 /**
  * Display for {@link MARSResultsTable}. This ensures that uiService.show() for a SDMMResultsTable will automatically be detected and 

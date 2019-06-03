@@ -31,9 +31,9 @@ import java.awt.Color;
 import java.util.ArrayList;
 import javax.swing.JPanel;
 
-import de.mpg.biochem.mars.swing.molecule.Molecule;
+import de.mpg.biochem.mars.molecule.Molecule;
 import de.mpg.biochem.mars.swing.plot.Plot.Type;
-import de.mpg.biochem.mars.swing.table.MARSResultsTable;
+import de.mpg.biochem.mars.table.MARSResultsTable;
 
 //This will hold single and multicurve plots that go in the Plot panel of the
 //Molecule Archive window...

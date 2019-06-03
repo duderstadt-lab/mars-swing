@@ -75,13 +75,13 @@ import org.scijava.widget.FileWidget;
 
 import de.mpg.biochem.mars.swing.plot.PlotDialog;
 import de.mpg.biochem.mars.swing.plot.PlotProperties;
-import de.mpg.biochem.mars.table.*;
+import de.mpg.biochem.mars.table.MARSResultsTable;
 import de.mpg.biochem.mars.molecule.*;
 
 import ij.WindowManager;
 import ij.gui.GenericDialog;
 
-public class MoleculeArchiveFrame implements MoleculeArchiveWindow {
+public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 	
 	@Parameter
     private MoleculeArchiveService moleculeArchiveService;
@@ -142,7 +142,7 @@ public class MoleculeArchiveFrame implements MoleculeArchiveWindow {
 	
     static int charactersPerLine = 70;
 
-	public MoleculeArchiveFrame(MoleculeArchiveService moleculeArchiveService) {
+	public MoleculeArchiveSwingFrame(MoleculeArchiveService moleculeArchiveService) {
 		this.moleculeArchiveService = moleculeArchiveService;
 		this.prefService = 	moleculeArchiveService.getPrefService();
 		this.uiService = moleculeArchiveService.getUIService();
@@ -153,7 +153,7 @@ public class MoleculeArchiveFrame implements MoleculeArchiveWindow {
 			WindowManager.addWindow(frame);
 	}
 	
-	public MoleculeArchiveFrame(MoleculeArchive archive, MoleculeArchiveService moleculeArchiveService) {
+	public MoleculeArchiveSwingFrame(MoleculeArchive archive, MoleculeArchiveService moleculeArchiveService) {
 		this.archive = archive;
 		archive.setWindow(this);
 		this.moleculeArchiveService = moleculeArchiveService;

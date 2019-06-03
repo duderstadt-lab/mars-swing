@@ -26,6 +26,7 @@
  ******************************************************************************/
 package de.mpg.biochem.mars.swing.molecule;
 
+import de.mpg.biochem.mars.molecule.Molecule;
 
 public interface MoleculeChangedListener {
 	public void MoleculeChanged(Molecule molecule);

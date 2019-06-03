@@ -31,6 +31,8 @@ import org.scijava.display.Display;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
+import de.mpg.biochem.mars.molecule.*;
+
 /**
  * Display for {@link MoleculeArchive}. This ensures that uiService.show() for a MoleculeArchive will automatically be detected and 
  * call the view method in MoleculeArchiveView to make our custom window with custom menus.

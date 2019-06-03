@@ -37,7 +37,7 @@ import java.awt.Color;
 import java.lang.reflect.Field;
 import java.util.Vector;
 
-import de.mpg.biochem.mars.swing.table.MARSResultsTable;
+import de.mpg.biochem.mars.table.MARSResultsTable;
 
 public class PlotDialog extends GenericDialog implements DialogListener {
 	private static final long serialVersionUID = 1L;

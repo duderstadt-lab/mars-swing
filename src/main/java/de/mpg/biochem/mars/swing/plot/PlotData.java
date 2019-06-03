@@ -31,7 +31,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 
-import de.mpg.biochem.mars.swing.table.*;
+import de.mpg.biochem.mars.table.*;
+import de.mpg.biochem.mars.molecule.*;
 import ij.text.TextWindow;
 
 public class PlotData {

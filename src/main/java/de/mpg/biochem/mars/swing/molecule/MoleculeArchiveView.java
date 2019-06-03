@@ -41,6 +41,9 @@ import org.scijava.ui.viewer.DisplayViewer;
 
 import net.imagej.display.WindowService;
 
+import de.mpg.biochem.mars.molecule.*;
+
+
 @Plugin(type = DisplayViewer.class)
 public class MoleculeArchiveView extends AbstractDisplayViewer<MoleculeArchive> implements DisplayViewer<MoleculeArchive> {
 	
@@ -58,7 +61,7 @@ public class MoleculeArchiveView extends AbstractDisplayViewer<MoleculeArchive> 
 		moleculeArchiveService.addArchive(archive);
 		d.setName(archive.getName());
 		
-		new MoleculeArchiveWindow(archive, moleculeArchiveService);
+		new MoleculeArchiveSwingFrame(archive, moleculeArchiveService);
 	}
 
 	@Override

@@ -40,6 +40,8 @@ import org.scijava.ui.viewer.DisplayViewer;
 
 import net.imagej.display.WindowService;
 
+import de.mpg.biochem.mars.table.*;
+
 @Plugin(type = DisplayViewer.class)
 public class MARSResultsTableView extends AbstractDisplayViewer<MARSResultsTable> implements DisplayViewer<MARSResultsTable> {
 	

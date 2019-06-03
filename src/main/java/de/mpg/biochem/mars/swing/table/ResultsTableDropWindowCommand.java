@@ -24,7 +24,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
-package de.mpg.biochem.mars.table;
+package de.mpg.biochem.mars.swing.table;
 
 import org.scijava.app.StatusService;
 import org.scijava.command.Command;
@@ -34,6 +34,8 @@ import org.scijava.plugin.Menu;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.scijava.ui.UIService;
+
+import de.mpg.biochem.mars.table.*;
 
 @Plugin(type = Command.class, label = "Drag & Drop Window", menu = {
 		@Menu(label = MenuConstants.PLUGINS_LABEL, weight = MenuConstants.PLUGINS_WEIGHT,

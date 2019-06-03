@@ -24,7 +24,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
-package de.mpg.biochem.mars.table;
+package de.mpg.biochem.mars.swing.table;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -54,6 +54,8 @@ import org.scijava.ui.DialogPrompt.MessageType;
 import org.scijava.ui.UIService;
 
 import com.fasterxml.jackson.core.JsonParseException;
+
+import de.mpg.biochem.mars.table.*;
 
 //Can we just make this a module so the services are automatically populated???
 public class TableDropRunner implements DropTargetListener, Runnable {

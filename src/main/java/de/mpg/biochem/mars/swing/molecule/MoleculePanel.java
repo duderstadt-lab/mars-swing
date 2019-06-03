@@ -229,7 +229,7 @@ public class MoleculePanel extends JPanel implements BoundsChangedListener, Mole
                     if (moleculeRecordChanged)
                     	archive.put(molecule);
                     molecule = archive.get((String)moleculeIndex.getValueAt(selectedRow, 1));
-                    updateAll();
+                    update();
                 }
             }
         });
@@ -297,7 +297,7 @@ public class MoleculePanel extends JPanel implements BoundsChangedListener, Mole
 		setLayout(new BorderLayout());
 		add(splitPane, BorderLayout.CENTER);
 		
-		updateAll();
+		update();
 	}
 	
 	private JScrollPane buildDataTable() {
@@ -804,7 +804,7 @@ public class MoleculePanel extends JPanel implements BoundsChangedListener, Mole
 		archive.put(molecule);
 	}
 
-	public void updateAll() {
+	public void update() {
 		if (archive.getNumberOfMolecules() == 0) {
 			System.out.println("No molecules found");
 			molecule = DummyMolecule;
