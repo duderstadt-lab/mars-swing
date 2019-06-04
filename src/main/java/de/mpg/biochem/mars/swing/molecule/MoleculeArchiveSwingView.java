@@ -26,35 +26,62 @@
  ******************************************************************************/
 package de.mpg.biochem.mars.swing.molecule;
 
-import org.scijava.display.AbstractDisplay;
+import org.scijava.plugin.Parameter;
+import org.scijava.ui.UIService;
+
 import org.scijava.display.Display;
+import org.scijava.display.DisplayService;
+import org.scijava.log.LogService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.scijava.ui.UIService;
+import org.scijava.ui.UserInterface;
+import org.scijava.ui.viewer.AbstractDisplayViewer;
+import org.scijava.ui.viewer.DisplayViewer;
+import org.scijava.Priority;
+
+import net.imagej.display.WindowService;
 
 import de.mpg.biochem.mars.molecule.*;
 
-/**
- * Display for {@link MoleculeArchive}. This ensures that uiService.show() for a MoleculeArchive will automatically be detected and 
- * call the view method in MoleculeArchiveView to make our custom window with custom menus.
- * 
- * @author Karl Duderstadt
- */
-@Plugin(type = Display.class)
-public class MoleculeArchiveDisplay extends AbstractDisplay<MoleculeArchive> implements Display<MoleculeArchive> {
+
+@Plugin(type = DisplayViewer.class, priority = Priority.NORMAL)
+public class MoleculeArchiveSwingView extends AbstractDisplayViewer<MoleculeArchive> implements DisplayViewer<MoleculeArchive> {
 	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public MoleculeArchiveDisplay() {
-		super((Class) MoleculeArchive.class);
+	@Parameter
+    private MoleculeArchiveService moleculeArchiveService;
+	
+	//This method is called to create and display a window
+	//here we override it to make sure that calls like uiService.show( .. for MoleculeArchive 
+	//will use this method automatically..
+	@Override
+	public void view(final UserInterface ui, final Display<?> d) {	
+		MoleculeArchive archive = (MoleculeArchive)d.get(0);
+		archive.setName(d.getName());
+
+		moleculeArchiveService.addArchive(archive);
+		d.setName(archive.getName());
+		
+		new MoleculeArchiveSwingFrame(archive, moleculeArchiveService);
 	}
 
-	// -- Display methods --
+	@Override
+	public boolean canView(final Display<?> d) {
+		if (d instanceof MoleculeArchiveSwingDisplay) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	@Override
+	public MoleculeArchiveSwingDisplay getDisplay() {
+		return (MoleculeArchiveSwingDisplay) super.getDisplay();
+	}
 
 	@Override
-	public boolean canDisplay(final Class<?> c) {
-		if (c.equals(MoleculeArchive.class)) {
-			return true;
-		} else { 
-			return super.canDisplay(c);
-		}
+	public boolean isCompatible(UserInterface arg0) {
+		//Needs to be updated if all contexts are to be enabled beyond ImageJ
+		return true;
 	}
 }
