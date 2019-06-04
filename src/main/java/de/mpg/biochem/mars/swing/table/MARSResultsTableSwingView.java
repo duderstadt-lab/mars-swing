@@ -28,7 +28,7 @@ package de.mpg.biochem.mars.swing.table;
 
 import org.scijava.plugin.Parameter;
 import org.scijava.ui.UIService;
-
+import org.scijava.Priority;
 import org.scijava.display.Display;
 import org.scijava.log.LogService;
 import org.scijava.plugin.Parameter;
@@ -42,14 +42,14 @@ import net.imagej.display.WindowService;
 
 import de.mpg.biochem.mars.table.*;
 
-@Plugin(type = DisplayViewer.class)
-public class MARSResultsTableView extends AbstractDisplayViewer<MARSResultsTable> implements DisplayViewer<MARSResultsTable> {
+@Plugin(type = DisplayViewer.class, priority = Priority.NORMAL)
+public class MARSResultsTableSwingView extends AbstractDisplayViewer<MARSResultsTable> implements DisplayViewer<MARSResultsTable> {
 	
 	@Parameter
     private ResultsTableService resultsTableService;
 	
 	//This method is called to create and display a window
-	//here we override it to make sure that calls like uiService.show( .. for SDMMResultsTable 
+	//here we override it to make sure that calls like uiService.show( .. for MARSResultsTable 
 	//will use this method automatically..
 	@Override
 	public void view(final UserInterface ui, final Display<?> d) {
@@ -65,7 +65,7 @@ public class MARSResultsTableView extends AbstractDisplayViewer<MARSResultsTable
 
 	@Override
 	public boolean canView(final Display<?> d) {
-		if (d instanceof MARSResultsTableDisplay) {
+		if (d instanceof MARSResultsTableSwingDisplay) {
 			return true;
 		} else {
 			return false;
@@ -73,8 +73,8 @@ public class MARSResultsTableView extends AbstractDisplayViewer<MARSResultsTable
 	}
 	
 	@Override
-	public MARSResultsTableDisplay getDisplay() {
-		return (MARSResultsTableDisplay) super.getDisplay();
+	public MARSResultsTableSwingDisplay getDisplay() {
+		return (MARSResultsTableSwingDisplay) super.getDisplay();
 	}
 
 	@Override

@@ -26,6 +26,7 @@
  ******************************************************************************/
 package de.mpg.biochem.mars.swing.table;
 
+import org.scijava.Priority;
 import org.scijava.display.AbstractDisplay;
 import org.scijava.display.Display;
 import org.scijava.plugin.Parameter;
@@ -35,16 +36,16 @@ import ij.text.TextWindow;
 import de.mpg.biochem.mars.table.*;
 
 /**
- * Display for {@link MARSResultsTable}. This ensures that uiService.show() for a SDMMResultsTable will automatically be detected and 
- * call the view method in SDMMResultsTableView to make our custom window with custom menus.
+ * Display for {@link MARSResultsTable}. This ensures that uiService.show() for a MARSResultsTable will automatically be detected and 
+ * call the view method in MARSResultsTableSwingView to make our custom window with custom menus.
  * 
  * @author Karl Duderstadt
  */
-@Plugin(type = Display.class)
-public class MARSResultsTableDisplay extends AbstractDisplay<MARSResultsTable> implements Display<MARSResultsTable> {
+@Plugin(type = Display.class, priority = Priority.NORMAL)
+public class MARSResultsTableSwingDisplay extends AbstractDisplay<MARSResultsTable> implements Display<MARSResultsTable> {
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public MARSResultsTableDisplay() {
+	public MARSResultsTableSwingDisplay() {
 		super((Class) MARSResultsTable.class);
 	}
 
