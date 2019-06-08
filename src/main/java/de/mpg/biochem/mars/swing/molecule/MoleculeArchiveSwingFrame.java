@@ -669,12 +669,7 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
  		frame.addWindowListener(new WindowAdapter() {
  	         public void windowClosing(WindowEvent e) {
  	        	if (!lockArchive)
-					try {
-						close();
-					} catch (IOException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
+					close();
  	         }
  	      });
 		frame.setLayout(new BorderLayout());
@@ -973,13 +968,18 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 		}
 	}
 	
-	public void close() throws IOException {
+	public void close() {
 		moleculeArchiveService.removeArchive(archive.getName());
 		
 		if (archive.isVirtual()) {
 			imageMetaDataPanel.saveCurrentRecord();
 			moleculePanel.saveCurrentRecord();
-			archive.save();
+			try {
+				archive.save();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		
 		frame.setVisible(false);
