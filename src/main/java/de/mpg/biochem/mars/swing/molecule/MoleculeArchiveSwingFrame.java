@@ -34,6 +34,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -77,9 +78,11 @@ import de.mpg.biochem.mars.swing.plot.PlotDialog;
 import de.mpg.biochem.mars.swing.plot.PlotProperties;
 import de.mpg.biochem.mars.table.MARSResultsTable;
 import de.mpg.biochem.mars.molecule.*;
-
 import ij.WindowManager;
 import ij.gui.GenericDialog;
+import ij.gui.PointRoi;
+import ij.gui.Roi;
+import ij.plugin.frame.RoiManager;
 
 public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 	
@@ -91,6 +94,9 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
     
     @Parameter
     private PrefService prefService;
+    
+    @Parameter
+    private RoiManager roiManager;
 
     private MoleculeArchive archive;
 	
@@ -131,6 +137,7 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 	private JMenuItem deleteTagsMenuItem = new JMenuItem("Delete Tags");
 	private JMenuItem deleteParametersMenuItem = new JMenuItem("Delete Parameters");
 	
+	private JMenuItem addToRoiManager = new JMenuItem("Add to ROIManager");
 	private JMenuItem mergeMenuItem = new JMenuItem("Merge Molecules");
 	private JMenuItem updateMenuItem = new JMenuItem("Update Window");
 	private JMenuItem rebuildIndexesMenuItem = new JMenuItem("Rebuild Indexes");
@@ -146,6 +153,7 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 		this.moleculeArchiveService = moleculeArchiveService;
 		this.prefService = 	moleculeArchiveService.getPrefService();
 		this.uiService = moleculeArchiveService.getUIService();
+		this.roiManager = moleculeArchiveService.getRoiManager();
 		
 		// add window to window manager
 		// IJ1 style IJ2 doesn't seem to work...
@@ -159,6 +167,8 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 		this.moleculeArchiveService = moleculeArchiveService;
 		this.prefService = 	moleculeArchiveService.getPrefService();
 		this.uiService = moleculeArchiveService.getUIService();
+		
+		moleculeArchiveService.getContext().inject(this);
 
 	    UIManager.put("Label.font", new Font("Menlo", Font.PLAIN, 12));
 		
@@ -649,6 +659,57 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 					}
 		        	 
 		        	 update();
+	        	 }
+	          }
+	       });
+		
+		toolsMenu.add(addToRoiManager);
+		addToRoiManager.addActionListener(new ActionListener() {
+	         public void actionPerformed(ActionEvent e) {
+	        	 if (!lockArchive) {
+	        		 if (roiManager == null)
+	        				roiManager = new RoiManager();
+	        		 
+	        		 Molecule mol = moleculePanel.getMolecule();
+	        		 if (mol != null) {
+	        			MARSResultsTable datatable = mol.getDataTable();
+	        			 
+	        			int x0 = -6;
+			     		int y0 = -6;
+			     		int width = 12;
+			     		int height = 12;
+	        			 
+	        			GenericDialog dialog = new GenericDialog("Add ROI to Manager");
+	        			String[] columnNames = mol.getDataTable().getColumnHeadings();
+			     		dialog.addChoice("x_column", columnNames, "x");
+			     		dialog.addChoice("y_column", columnNames, "y");
+			     		
+			     		dialog.addNumericField("x0", x0, 0);
+			     		dialog.addNumericField("y0", y0, 0);
+			     		dialog.addNumericField("width", width, 0);
+			     		dialog.addNumericField("Height", height, 0);
+			     		dialog.showDialog();
+			     		
+			     		if (dialog.wasCanceled())
+			     			return;
+			     		
+			     		 String xColumnName = dialog.getNextChoice();
+			     		 String yColumnName = dialog.getNextChoice();
+			     		 x0 = (int)dialog.getNextNumber(); 
+			     		 y0 = (int)dialog.getNextNumber(); 
+			     		 width = (int)dialog.getNextNumber(); 
+			     		 height = (int)dialog.getNextNumber(); 
+						
+						int x_value = (int)(datatable.mean(xColumnName) + 0.5);
+						int y_value = (int)(datatable.mean(yColumnName) + 0.5);
+						
+						Rectangle r = new Rectangle(x_value + x0, y_value + y0, width, height);
+						
+						Roi roi = new Roi(r);
+							
+						roi.setName(mol.getUID());
+						roiManager.addRoi(roi);
+	        		 }
 	        	 }
 	          }
 	       });
