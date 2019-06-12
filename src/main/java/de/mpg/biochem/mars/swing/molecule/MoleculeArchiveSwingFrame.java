@@ -153,7 +153,6 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 		this.moleculeArchiveService = moleculeArchiveService;
 		this.prefService = 	moleculeArchiveService.getPrefService();
 		this.uiService = moleculeArchiveService.getUIService();
-		this.roiManager = moleculeArchiveService.getRoiManager();
 		
 		// add window to window manager
 		// IJ1 style IJ2 doesn't seem to work...
@@ -167,8 +166,6 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 		this.moleculeArchiveService = moleculeArchiveService;
 		this.prefService = 	moleculeArchiveService.getPrefService();
 		this.uiService = moleculeArchiveService.getUIService();
-		
-		moleculeArchiveService.getContext().inject(this);
 
 	    UIManager.put("Label.font", new Font("Menlo", Font.PLAIN, 12));
 		
@@ -667,6 +664,8 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 		addToRoiManager.addActionListener(new ActionListener() {
 	         public void actionPerformed(ActionEvent e) {
 	        	 if (!lockArchive) {
+	        		 roiManager = RoiManager.getInstance();
+	        		 
 	        		 if (roiManager == null)
 	        				roiManager = new RoiManager();
 	        		 

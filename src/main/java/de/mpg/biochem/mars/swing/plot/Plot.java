@@ -389,7 +389,21 @@ public class Plot extends JComponent implements ActionListener {
 	}
 	
 	public void resetOriginalBounds() {
-		originalBounds = new Rectangle2D.Double(plotCoordinates.get(0)[0], plotCoordinates.get(0)[1], 0, 0);
+		//FIX NaN not-plotting issue
+		originalBounds = null;
+		for (int i=0;i<plotCoordinates.size();i++) {
+			double[] coor = plotCoordinates.get(i);
+			
+			for (int j = 0; j < coor.length/2; j++) {
+				if (!Double.isNaN(coor[j * 2]) && !Double.isNaN(coor[j * 2 + 1])) {
+					originalBounds = new Rectangle2D.Double(coor[j * 2], coor[j * 2 + 1], 0, 0);
+					break;
+				}
+			}
+			if (originalBounds != null)
+				break;
+		}
+		//FIX NaN non-plotting issue
 		
 		for (int i=0;i<plotCoordinates.size();i++) {
 			double[] coor = plotCoordinates.get(i);
@@ -509,8 +523,12 @@ public class Plot extends JComponent implements ActionListener {
 	private void addPlot(double[] x, double[] y, Type type, Color c, float lineWidth, String plotName) {
 		double[] plot = new double[x.length * 2];
 		
-		if (originalBounds == null)
-			originalBounds = new Rectangle2D.Double(x[0], y[0], 0, 0);
+		for (int i = 0; i < x.length; i++) {
+			plot[i * 2] = x[i];
+			plot[i * 2 + 1] = y[i];
+			if (!Double.isNaN(x[i]) && !Double.isNaN(y[i]))
+				originalBounds = new Rectangle2D.Double(x[i], y[i], 0, 0);	
+		}
 		
 		for (int i = 0; i < x.length; i++) {
 			plot[i * 2] = x[i];
@@ -565,8 +583,13 @@ public class Plot extends JComponent implements ActionListener {
 		//Now we need to reset the originalBounds of the plot.
 		originalBounds = null;
 		for (int j=0;j<plotCoordinates.size();j++) {
-			if (originalBounds == null)
-				originalBounds = new Rectangle2D.Double(plotCoordinates.get(j)[0], plotCoordinates.get(j)[1], 0, 0);
+			if (originalBounds == null) {
+				for (int i = 0; i < plotCoordinates.get(j).length/2; i++) {
+					if (!Double.isNaN(plotCoordinates.get(j)[i * 2]) && !Double.isNaN(plotCoordinates.get(j)[i * 2 + 1]))
+						originalBounds = new Rectangle2D.Double(plotCoordinates.get(j)[i * 2], plotCoordinates.get(j)[i * 2 + 1], 0, 0);
+				}
+			}
+			
 			for (int i = 0; i < plotCoordinates.get(j).length/2; i++) {
 				if (plotTypes.get(j) == Type.BAR) {
 					double binWidth = plotCoordinates.get(j)[2] - plotCoordinates.get(j)[0];
