@@ -1,4 +1,4 @@
-<img src="https://raw.githubusercontent.com/duderstadt-lab/mars-docs/master/images/MARS%20front%20page.png" width=“800">
+<p><img src="https://raw.githubusercontent.com/duderstadt-lab/mars-docs/master/images/MARS%20front%20page.png" width=“800"></p>
 
 **MARS** - **M**olecule **AR**chive **S**uite - A collection of ImageJ2 commands for single-molecule analysis.
 
