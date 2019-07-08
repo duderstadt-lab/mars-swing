@@ -525,27 +525,31 @@ public class Plot extends JComponent implements ActionListener {
 	}
 	
 	private void addPlot(double[] x, double[] y, Type type, Color c, float lineWidth, String plotName) {
-		double[] plot = new double[x.length * 2];
-		
+		//Determine size without NaN containing rows.
+		int nonNaNrowCount = 0;
 		for (int i = 0; i < x.length; i++) {
-			plot[i * 2] = x[i];
-			plot[i * 2 + 1] = y[i];
 			if (!Double.isNaN(x[i]) && !Double.isNaN(y[i]))
-				originalBounds = new Rectangle2D.Double(x[i], y[i], 0, 0);	
+				nonNaNrowCount++;
 		}
 		
+		double[] plot = new double[nonNaNrowCount * 2];
+		
+		int pos = 0;
 		for (int i = 0; i < x.length; i++) {
-			plot[i * 2] = x[i];
-			plot[i * 2 + 1] = y[i];
-			if (type == Type.BAR) {
-				double binWidth = x[1]-x[0];
-				if (!Double.isNaN(x[i]) && !Double.isNaN(y[i]))
-					originalBounds.add(new Rectangle2D.Double(x[i] - binWidth/2, 0, binWidth, y[i]));
-			} else {
-				if (!Double.isNaN(x[i]) && !Double.isNaN(y[i]))
-					originalBounds.add(x[i], y[i]);
+			if (!Double.isNaN(x[i]) && !Double.isNaN(y[i])) {
+				plot[pos * 2] = x[i];
+				plot[pos * 2 + 1] = y[i];
+				if (originalBounds == null) {
+					originalBounds = new Rectangle2D.Double(x[i], y[i], 0, 0);
+				} else {
+					if (type == Type.BAR) {
+						double binWidth = x[1]-x[0];
+						originalBounds.add(new Rectangle2D.Double(x[i] - binWidth/2, 0, binWidth, y[i]));
+					} else
+						originalBounds.add(x[i], y[i]);	
+				}
+				pos++;
 			}
-				
 		}
 		
 		if (fixYBounds) {
