@@ -344,7 +344,7 @@ public class MARSResultsTableSwingFrame implements ActionListener, MARSResultsTa
 	}
 	
 	protected void deleteRows() {
-		resultsTableService.deleteRows(results, table.getSelectedRows());
+		results.deleteRows(table.getSelectedRows());
 		
 		table.clearSelection();
 		tableModel.fireTableDataChanged();

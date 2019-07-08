@@ -147,7 +147,7 @@
 		<dependency>
 			<groupId>de.mpg.biochem</groupId>
 			<artifactId>mars-core</artifactId>
-			<version>1.0.0-SNAPSHOT-beta11</version>
+			<version>1.0.0-SNAPSHOT-beta12</version>
 		</dependency>
 		<dependency>
 			<groupId>org.scijava</groupId>
