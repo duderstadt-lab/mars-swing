@@ -65,7 +65,7 @@ import de.mpg.biochem.mars.table.*;
 public class TableDropRunner implements DropTargetListener, Runnable {
 	
 	@Parameter
-	private ResultsTableService resultsTableService;
+	private MarsTableService marsTableService;
 	
 	@Parameter
     private UIService uiService;
@@ -81,7 +81,7 @@ public class TableDropRunner implements DropTargetListener, Runnable {
 	private ArrayList<File> tables = new ArrayList<File>();
 	
 	private JFrame frame;
-	private JLabel label = new JLabel("<html><body><center>Drop MARSResultsTable files here</center><br><center>(csv, tab, or json)</center></body></html>", JLabel.CENTER);
+	private JLabel label = new JLabel("<html><body><center>Drop MarsTable files here</center><br><center>(csv, tab, or json)</center></body></html>", JLabel.CENTER);
 	
 	JPanel pane = new JPanel(new GridLayout(1,1), false);
 	
@@ -118,7 +118,7 @@ public class TableDropRunner implements DropTargetListener, Runnable {
     }
 	
 	public synchronized void openTables() {
-		ArrayList<String> tableNames = resultsTableService.getTableNames();
+		ArrayList<String> tableNames = marsTableService.getTableNames();
 		boolean open = true;
 		for (int j=0;j<tables.size();j++) {
 			File file = tables.get(j);
@@ -131,9 +131,9 @@ public class TableDropRunner implements DropTargetListener, Runnable {
          		}
          	}
          	if (open) { 	
-         		MARSResultsTable results;
+         		MarsTable results;
 				try {
-					results = new MARSResultsTable(file, statusService);
+					results = new MarsTable(file, statusService);
 					uiService.show(title, results);
 				} catch (JsonParseException e) {
 					// TODO Auto-generated catch block
@@ -188,8 +188,8 @@ public class TableDropRunner implements DropTargetListener, Runnable {
 	}
 	
 	//Utility methods to set Parameters not initialized...
-	public void setTableService(ResultsTableService resultsTableService) {
-		this.resultsTableService = resultsTableService;
+	public void setTableService(MarsTableService marsTableService) {
+		this.marsTableService = marsTableService;
 	}
 	
 	public void setUIService(UIService uiService) {

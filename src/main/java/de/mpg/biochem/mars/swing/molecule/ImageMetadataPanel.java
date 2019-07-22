@@ -70,15 +70,15 @@ import de.mpg.biochem.mars.swing.molecule.MoleculePanel.DecimalFormatRenderer;
 import de.mpg.biochem.mars.table.*;
 import de.mpg.biochem.mars.molecule.*;
 
-public class ImageMetaDataPanel extends JPanel {
-	private MARSImageMetaData imageMetaData;
-	private MoleculeArchive archive;
+public class ImageMetadataPanel extends JPanel {
+	private MarsImageMetadata imageMetadata;
+	private MoleculeArchive<Molecule, MarsImageMetadata, MoleculeArchiveProperties> archive;
 	
 	private JTextField UIDLabel, DateLabel, SourcePath;
 	private JTextField Microscope;
 	private JTextArea Notes;
 	
-	private int imageMetaDataCount;
+	private int imageMetadataCount;
 	
 	//Log Tab Components
 	private JScrollPane logTab;
@@ -86,12 +86,12 @@ public class ImageMetaDataPanel extends JPanel {
 	
 	private JTabbedPane metaDataTabs;
 	
-	private JTable imageMetaDataIndex;
-	private AbstractTableModel imageMetaDataIndexTableModel;
-	private TableRowSorter imageMetaDataSorter;
+	private JTable imageMetadataIndex;
+	private AbstractTableModel imageMetadataIndexTableModel;
+	private TableRowSorter imageMetadataSorter;
 	
-	private JTextField imageMetaDataSearchField;
-	private JScrollPane imageMetaDataProperties;
+	private JTextField imageMetadataSearchField;
+	private JScrollPane imageMetadataProperties;
 	
 	private JTable DataTable;
 	private AbstractTableModel DataTableModel;
@@ -104,27 +104,27 @@ public class ImageMetaDataPanel extends JPanel {
 	private AbstractTableModel TagTableModel;
 	private String[] TagList;
 	
-	private boolean imageMetaDataRecordChanged = false;
+	private boolean imageMetadataRecordChanged = false;
 	
-	private MARSImageMetaData DummyImageMetaData = new MARSImageMetaData("unknown", new MARSResultsTable());
+	private SdmmImageMetadata DummyImageMetadata = new SdmmImageMetadata("unknown", new MarsTable());
 	
-	public ImageMetaDataPanel(MoleculeArchive archive) {
+	public ImageMetadataPanel(MoleculeArchive<Molecule, MarsImageMetadata, MoleculeArchiveProperties> archive) {
 		this.archive = archive;
 		
-		if (archive.getNumberOfImageMetaDataRecords() > 0) {
-			this.imageMetaData = archive.getImageMetaData(0);
+		if (archive.getNumberOfImageMetadataRecords() > 0) {
+			this.imageMetadata = archive.getImageMetadata(0);
 		} else {
-			imageMetaData = DummyImageMetaData;
+			imageMetadata = DummyImageMetadata;
 		}
 		
-		imageMetaDataCount = archive.getNumberOfImageMetaDataRecords();
+		imageMetadataCount = archive.getNumberOfImageMetadataRecords();
 		buildPanel();
 	}
 	
 	public void buildPanel() {
 		//METADATA INDEX LIST
-		//Need to build the index datamodel backed by the ImageMetaData...
-		imageMetaDataIndexTableModel = new AbstractTableModel() {
+		//Need to build the index datamodel backed by the ImageMetadata...
+		imageMetadataIndexTableModel = new AbstractTableModel() {
 			private static final long serialVersionUID = 1L;
 
 			@Override
@@ -132,9 +132,9 @@ public class ImageMetaDataPanel extends JPanel {
 				if (columnIndex == 0) {
 					return "" + rowIndex;
 				} else if (columnIndex == 1) {
-					return archive.getImageMetaDataUIDAtIndex(rowIndex);
+					return archive.getImageMetadataUIDAtIndex(rowIndex);
 				}  else if (columnIndex == 2) {
-					return archive.getImageMetaDataTagList(archive.getImageMetaDataUIDAtIndex(rowIndex));
+					return archive.getImageMetadataTagList(archive.getImageMetadataUIDAtIndex(rowIndex));
 				}	
 				return null;
 			}
@@ -153,7 +153,7 @@ public class ImageMetaDataPanel extends JPanel {
 
 			@Override
 			public int getRowCount() {
-				return archive.getNumberOfImageMetaDataRecords();
+				return archive.getNumberOfImageMetadataRecords();
 			}
 			
 			@Override
@@ -167,13 +167,13 @@ public class ImageMetaDataPanel extends JPanel {
 			}
 		};
 		
-		imageMetaDataIndex = new JTable(imageMetaDataIndexTableModel);
-		imageMetaDataIndex.setFont(new Font("Menlo", Font.PLAIN, 12));
-		imageMetaDataIndex.setRowSelectionAllowed(true);
-		imageMetaDataIndex.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		resizeColumnWidth(imageMetaDataIndex);
+		imageMetadataIndex = new JTable(imageMetadataIndexTableModel);
+		imageMetadataIndex.setFont(new Font("Menlo", Font.PLAIN, 12));
+		imageMetadataIndex.setRowSelectionAllowed(true);
+		imageMetadataIndex.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		resizeColumnWidth(imageMetadataIndex);
 		
-		ListSelectionModel rowIMD = imageMetaDataIndex.getSelectionModel();
+		ListSelectionModel rowIMD = imageMetadataIndex.getSelectionModel();
 		rowIMD.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
             	if (ParameterTable != null && ParameterTable.isEditing())
@@ -184,51 +184,51 @@ public class ImageMetaDataPanel extends JPanel {
                 ListSelectionModel lsm = (ListSelectionModel)e.getSource();
                 if (!lsm.isSelectionEmpty()) {
                     int selectedRow = lsm.getMinSelectionIndex();
-                    if (imageMetaDataRecordChanged && archive.getNumberOfImageMetaDataRecords() != 0)
-                    	archive.putImageMetaData(imageMetaData);
-                    imageMetaData = archive.getImageMetaData((String)imageMetaDataIndex.getValueAt(selectedRow, 1));
+                    if (imageMetadataRecordChanged && archive.getNumberOfImageMetadataRecords() != 0)
+                    	archive.putImageMetadata(imageMetadata);
+                    imageMetadata = archive.getImageMetadata((String)imageMetadataIndex.getValueAt(selectedRow, 1));
                     updateAll();
                 }
             }
         });
 
-		//for (int i=0; i<imageMetaDataIndex.getColumnCount();i++)
-		//	imageMetaDataIndex.getColumnModel().getColumn(i).sizeWidthToFit();
+		//for (int i=0; i<imageMetadataIndex.getColumnCount();i++)
+		//	imageMetadataIndex.getColumnModel().getColumn(i).sizeWidthToFit();
 		
-		imageMetaDataIndex.getColumnModel().getColumn(0).setMinWidth(40);
-		imageMetaDataIndex.getColumnModel().getColumn(1).setMinWidth(70);
+		imageMetadataIndex.getColumnModel().getColumn(0).setMinWidth(40);
+		imageMetadataIndex.getColumnModel().getColumn(1).setMinWidth(70);
 		
-		JScrollPane imageMetaDataIndexScrollPane = new JScrollPane(imageMetaDataIndex);
+		JScrollPane imageMetadataIndexScrollPane = new JScrollPane(imageMetadataIndex);
 
 		JPanel westPane = new JPanel();
 		westPane.setLayout(new BorderLayout());
 		
-		imageMetaDataSorter = new TableRowSorter<AbstractTableModel>(imageMetaDataIndexTableModel);
-		for (int i=0;i<imageMetaDataIndexTableModel.getColumnCount();i++)
-			imageMetaDataSorter.setSortable(i, false);
+		imageMetadataSorter = new TableRowSorter<AbstractTableModel>(imageMetadataIndexTableModel);
+		for (int i=0;i<imageMetadataIndexTableModel.getColumnCount();i++)
+			imageMetadataSorter.setSortable(i, false);
 		
-		imageMetaDataIndex.setRowSorter(imageMetaDataSorter);
+		imageMetadataIndex.setRowSorter(imageMetadataSorter);
 		
-		imageMetaDataSearchField = new JTextField();
+		imageMetadataSearchField = new JTextField();
 		
-		imageMetaDataSearchField.getDocument().addDocumentListener(
+		imageMetadataSearchField.getDocument().addDocumentListener(
 	        new DocumentListener() {
 	            public void changedUpdate(DocumentEvent e) {
-	            	filterImageMetaDataIndex();
+	            	filterImageMetadataIndex();
 	            }
 	            public void insertUpdate(DocumentEvent e) {
-	            	filterImageMetaDataIndex();
+	            	filterImageMetadataIndex();
 	            }
 	            public void removeUpdate(DocumentEvent e) {
-	            	filterImageMetaDataIndex();
+	            	filterImageMetadataIndex();
 	            }
 	        });
 		
-		westPane.add(imageMetaDataIndexScrollPane, BorderLayout.CENTER);
-		westPane.add(imageMetaDataSearchField, BorderLayout.SOUTH);
+		westPane.add(imageMetadataIndexScrollPane, BorderLayout.CENTER);
+		westPane.add(imageMetadataSearchField, BorderLayout.SOUTH);
 		
 		metaDataTabs = new JTabbedPane();
-		buildMetaDataTabs();
+		buildMetadataTabs();
 		
 		updateParameterList();
 		updateTagList();
@@ -246,8 +246,8 @@ public class ImageMetaDataPanel extends JPanel {
 				
 		splitPane.setDividerLocation(300);
 		
-		if (archive.getNumberOfImageMetaDataRecords() > 0)
-			imageMetaDataIndex.setRowSelectionInterval(0, 0);
+		if (archive.getNumberOfImageMetadataRecords() > 0)
+			imageMetadataIndex.setRowSelectionInterval(0, 0);
 		
 		setLayout(new BorderLayout());
 		add(splitPane, BorderLayout.CENTER);
@@ -255,37 +255,37 @@ public class ImageMetaDataPanel extends JPanel {
 		updateAll();
 	}
 	
-	public void buildMetaDataTabs() {
+	public void buildMetadataTabs() {
 		metaDataTabs.removeAll();
 		
-		imageMetaDataProperties = buildMetaDataProperties();
-		metaDataTabs.addTab("Properties", imageMetaDataProperties);
+		imageMetadataProperties = buildMetadataProperties();
+		metaDataTabs.addTab("Properties", imageMetadataProperties);
 		
-		JScrollPane tablePane = buildMetaDataTable();
+		JScrollPane tablePane = buildMetadataTable();
 		metaDataTabs.addTab("DataTable", tablePane);
 		
 		//Notes
-		Notes = new JTextArea(imageMetaData.getNotes());
+		Notes = new JTextArea(imageMetadata.getNotes());
         JScrollPane commentScroll = new JScrollPane(Notes);
 		        
         Notes.getDocument().addDocumentListener(
 	        new DocumentListener() {
 	            public void changedUpdate(DocumentEvent e) {
-	            	if (archive.getNumberOfImageMetaDataRecords() != 0) {
-		            	imageMetaData.setNotes(Notes.getText());
-		            	archive.putImageMetaData(imageMetaData);
+	            	if (archive.getNumberOfImageMetadataRecords() != 0) {
+		            	imageMetadata.setNotes(Notes.getText());
+		            	archive.putImageMetadata(imageMetadata);
 	            	}
 	            }
 	            public void insertUpdate(DocumentEvent e) {
-	            	if (archive.getNumberOfImageMetaDataRecords() != 0) {
-		            	imageMetaData.setNotes(Notes.getText());
-		            	archive.putImageMetaData(imageMetaData);
+	            	if (archive.getNumberOfImageMetadataRecords() != 0) {
+		            	imageMetadata.setNotes(Notes.getText());
+		            	archive.putImageMetadata(imageMetadata);
 	            	}
 	            }
 	            public void removeUpdate(DocumentEvent e) {
-	            	if (archive.getNumberOfImageMetaDataRecords() != 0) {
-		            	imageMetaData.setNotes(Notes.getText());
-		            	archive.putImageMetaData(imageMetaData);
+	            	if (archive.getNumberOfImageMetadataRecords() != 0) {
+		            	imageMetadata.setNotes(Notes.getText());
+		            	archive.putImageMetadata(imageMetadata);
 	            	}
 	            }
 	        });
@@ -295,7 +295,7 @@ public class ImageMetaDataPanel extends JPanel {
 		metaDataTabs.addTab("Log", logTab);	
 	}
 	
-	public JScrollPane buildMetaDataProperties() {
+	public JScrollPane buildMetadataProperties() {
 		JPanel pane = new JPanel();
 		
 		pane.setLayout(new GridBagLayout());
@@ -318,7 +318,7 @@ public class ImageMetaDataPanel extends JPanel {
         pane.add(uidName, gbc);
 		
         gbc.gridy += 1;
-		UIDLabel = new JTextField("" + imageMetaData.getUID());
+		UIDLabel = new JTextField("" + imageMetadata.getUID());
 		UIDLabel.setFont(new Font("Menlo", Font.PLAIN, 12));
 		UIDLabel.setEditable(false);
 		UIDLabel.setBackground(null);
@@ -330,7 +330,7 @@ public class ImageMetaDataPanel extends JPanel {
 		pane.add(microscope, gbc);
 		
 		gbc.gridy += 1;
-		Microscope = new JTextField("" + imageMetaData.getMicroscopeName());
+		Microscope = new JTextField("" + imageMetadata.getMicroscopeName());
 		Microscope.setFont(new Font("Menlo", Font.PLAIN, 12));
 		Microscope.setEditable(false);
 		Microscope.setBackground(null);
@@ -342,7 +342,7 @@ public class ImageMetaDataPanel extends JPanel {
 		pane.add(CollectionDate, gbc);
 		
 		gbc.gridy += 1;
-		DateLabel = new JTextField("" + imageMetaData.getCollectionDate());
+		DateLabel = new JTextField("" + imageMetadata.getCollectionDate());
 		DateLabel.setFont(new Font("Menlo", Font.PLAIN, 12));
 		DateLabel.setEditable(false);
 		DateLabel.setBackground(null);
@@ -354,7 +354,7 @@ public class ImageMetaDataPanel extends JPanel {
 		pane.add(SourceFolder, gbc);
 		
 		gbc.gridy += 1;
-		SourcePath = new JTextField("" + imageMetaData.getSourceDirectory());
+		SourcePath = new JTextField("" + imageMetadata.getSourceDirectory());
 		SourcePath.setFont(new Font("Menlo", Font.PLAIN, 12));
 		SourcePath.setEditable(false);
 		SourcePath.setBackground(null);
@@ -378,7 +378,7 @@ public class ImageMetaDataPanel extends JPanel {
 		return scrollpane;
 	}
 	
-	private JScrollPane buildMetaDataTable() {
+	private JScrollPane buildMetadataTable() {
 		DataTableModel = new AbstractTableModel() {
 			private static final long serialVersionUID = 1L;
 
@@ -387,7 +387,7 @@ public class ImageMetaDataPanel extends JPanel {
 				if (columnIndex == 0)
 					return rowIndex + 1;
 				
-				return imageMetaData.getDataTable().get(columnIndex - 1, rowIndex);
+				return imageMetadata.getDataTable().get(columnIndex - 1, rowIndex);
 			}
 			
 			@Override
@@ -395,27 +395,27 @@ public class ImageMetaDataPanel extends JPanel {
 				if (columnIndex == 0)
 					return "Row";
 				
-				return imageMetaData.getDataTable().getColumnHeader(columnIndex - 1);
+				return imageMetadata.getDataTable().getColumnHeader(columnIndex - 1);
 			}
 
 			@Override
 			public int getRowCount() {
-				return imageMetaData.getDataTable().getRowCount();
+				return imageMetadata.getDataTable().getRowCount();
 			}
 			
 			@Override
 			public int getColumnCount() {
-				return imageMetaData.getDataTable().getColumnCount() + 1;
+				return imageMetadata.getDataTable().getColumnCount() + 1;
 			}
 			
 			/*
 			@Override
 			public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-				if (imageMetaData.getDataTable().get(columnIndex - 1)  instanceof DoubleColumn) {
-					imageMetaData.getDataTable().set(columnIndex - 1, rowIndex, Double.valueOf((String)aValue));
+				if (imageMetadata.getDataTable().get(columnIndex - 1)  instanceof DoubleColumn) {
+					imageMetadata.getDataTable().set(columnIndex - 1, rowIndex, Double.valueOf((String)aValue));
 				} else {
 					//Otherwise we just put a String
-					imageMetaData.getDataTable().set(columnIndex - 1, rowIndex, (String)aValue);
+					imageMetadata.getDataTable().set(columnIndex - 1, rowIndex, (String)aValue);
 				}
 			}
 			*/
@@ -449,7 +449,7 @@ public class ImageMetaDataPanel extends JPanel {
 	}
 
 	private JScrollPane makeLogTab() {
-		log = new JTextArea(imageMetaData.getLog());
+		log = new JTextArea(imageMetadata.getLog());
 		log.setFont(new Font("Menlo", Font.PLAIN, 12));
 		log.setEditable(false);
         JScrollPane pane = new JScrollPane(log);
@@ -497,13 +497,13 @@ public class ImageMetaDataPanel extends JPanel {
 	}
 
 	public void updateParameterList() {
-		ParameterList = new String[imageMetaData.getParameters().keySet().size()];
-		imageMetaData.getParameters().keySet().toArray(ParameterList);
+		ParameterList = new String[imageMetadata.getParameters().keySet().size()];
+		imageMetadata.getParameters().keySet().toArray(ParameterList);
 	}
 	
 	public void updateTagList() {
-		TagList = new String[imageMetaData.getTags().size()];
-		imageMetaData.getTags().toArray(TagList);
+		TagList = new String[imageMetadata.getTags().size()];
+		imageMetadata.getTags().toArray(TagList);
 	}
 
 	public JPanel buildParameterPanel() {
@@ -518,7 +518,7 @@ public class ImageMetaDataPanel extends JPanel {
 					return ParameterList[rowIndex];
 				}
 				
-				return imageMetaData.getParameters().get(ParameterList[rowIndex]);
+				return imageMetadata.getParameters().get(ParameterList[rowIndex]);
 			}
 			
 			@Override
@@ -541,9 +541,9 @@ public class ImageMetaDataPanel extends JPanel {
 			
 			@Override
 			public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-				imageMetaDataRecordChanged = true;
+				imageMetadataRecordChanged = true;
 				double value = Double.parseDouble((String)aValue);
-				imageMetaData.setParameter(ParameterList[rowIndex], value);
+				imageMetadata.setParameter(ParameterList[rowIndex], value);
 			}
 			
 			@Override
@@ -601,8 +601,8 @@ public class ImageMetaDataPanel extends JPanel {
 		Add.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (!newParameter.getText().equals("") && archive.getNumberOfMolecules() != 0) {
-					imageMetaDataRecordChanged = true;
-					imageMetaData.setParameter(newParameter.getText().trim(), 0);
+					imageMetadataRecordChanged = true;
+					imageMetadata.setParameter(newParameter.getText().trim(), 0);
 					updateParameterList();
 					ParameterTableModel.fireTableDataChanged();
 				}
@@ -616,9 +616,9 @@ public class ImageMetaDataPanel extends JPanel {
 		Remove.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (ParameterTable.getSelectedRow() != -1 && archive.getNumberOfMolecules() != 0) {
-					imageMetaDataRecordChanged = true;
+					imageMetadataRecordChanged = true;
 					String param = (String)ParameterTable.getValueAt(ParameterTable.getSelectedRow(), 0);
-					imageMetaData.removeParameter(param);
+					imageMetadata.removeParameter(param);
 					updateParameterList();
 					ParameterTableModel.fireTableDataChanged();
 				}
@@ -708,8 +708,8 @@ public class ImageMetaDataPanel extends JPanel {
 		Add.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (!newTag.getText().equals("") && archive.getNumberOfMolecules() != 0) {
-					imageMetaDataRecordChanged = true;
-					imageMetaData.addTag(newTag.getText().trim());
+					imageMetadataRecordChanged = true;
+					imageMetadata.addTag(newTag.getText().trim());
 					updateTagList();
 					TagTableModel.fireTableDataChanged();
 				}
@@ -728,8 +728,8 @@ public class ImageMetaDataPanel extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				if (TagTable.getSelectedRow() != -1 && archive.getNumberOfMolecules() != 0) {
 					String tag = (String)TagTable.getValueAt(TagTable.getSelectedRow(), 0);
-					imageMetaDataRecordChanged = true;
-					imageMetaData.removeTag(tag);
+					imageMetadataRecordChanged = true;
+					imageMetadata.removeTag(tag);
 					updateTagList();
 					TagTableModel.fireTableDataChanged();
 				}
@@ -744,16 +744,16 @@ public class ImageMetaDataPanel extends JPanel {
 	}
 	
 	public void saveCurrentRecord() {
-		if (archive.getNumberOfImageMetaDataRecords() != 0)
-			archive.putImageMetaData(imageMetaData);
+		if (archive.getNumberOfImageMetadataRecords() != 0)
+			archive.putImageMetadata(imageMetadata);
 	}
 	
 	public void updateAll() {
-		if (archive.getNumberOfImageMetaDataRecords() == 0) {
-			imageMetaData = DummyImageMetaData;
+		if (archive.getNumberOfImageMetadataRecords() == 0) {
+			imageMetadata = DummyImageMetadata;
 			Notes.setEditable(false);
-		} else if (archive.getImageMetaData(imageMetaData.getUID()) == null) {
-			imageMetaData = archive.getImageMetaData(0);
+		} else if (archive.getImageMetadata(imageMetadata.getUID()) == null) {
+			imageMetadata = archive.getImageMetadata(0);
 			Notes.setEditable(true);
 		} else {
 			//Need to reload the current record if
@@ -762,33 +762,33 @@ public class ImageMetaDataPanel extends JPanel {
 			//The new values are loaded 
 			//this prevents overwriting when switching records
 			//in the window..
-			imageMetaData = archive.getImageMetaData(imageMetaData.getUID());
+			imageMetadata = archive.getImageMetadata(imageMetadata.getUID());
 			Notes.setEditable(true);
 		}
-		imageMetaDataRecordChanged = false;
+		imageMetadataRecordChanged = false;
 		
 		//Update index table in case tags were changed
-		if (imageMetaDataCount < archive.getNumberOfImageMetaDataRecords()) {
-			imageMetaDataIndexTableModel.fireTableRowsInserted(imageMetaDataCount - 1, archive.getNumberOfImageMetaDataRecords() - 1);
-			imageMetaDataCount = archive.getNumberOfImageMetaDataRecords();
-		} else if (imageMetaDataCount > archive.getNumberOfImageMetaDataRecords()) {
-			imageMetaDataIndexTableModel.fireTableRowsDeleted(archive.getNumberOfImageMetaDataRecords() - 1, imageMetaDataCount - 1);
-			imageMetaDataCount = archive.getNumberOfImageMetaDataRecords();
+		if (imageMetadataCount < archive.getNumberOfImageMetadataRecords()) {
+			imageMetadataIndexTableModel.fireTableRowsInserted(imageMetadataCount - 1, archive.getNumberOfImageMetadataRecords() - 1);
+			imageMetadataCount = archive.getNumberOfImageMetadataRecords();
+		} else if (imageMetadataCount > archive.getNumberOfImageMetadataRecords()) {
+			imageMetadataIndexTableModel.fireTableRowsDeleted(archive.getNumberOfImageMetadataRecords() - 1, imageMetadataCount - 1);
+			imageMetadataCount = archive.getNumberOfImageMetadataRecords();
 		}
 			
 		//Update all entries...
-		if (imageMetaDataCount != 0) {
-			imageMetaDataIndexTableModel.fireTableRowsUpdated(0, imageMetaDataCount - 1);
+		if (imageMetadataCount != 0) {
+			imageMetadataIndexTableModel.fireTableRowsUpdated(0, imageMetadataCount - 1);
 		}
 		
 		updateParameterList();
 		updateTagList();
 		
 		//Update Labels
-		UIDLabel.setText(imageMetaData.getUID());
-		Microscope.setText(imageMetaData.getMicroscopeName());
-		DateLabel.setText(imageMetaData.getCollectionDate());
-		SourcePath.setText(imageMetaData.getSourceDirectory());
+		UIDLabel.setText(imageMetadata.getUID());
+		Microscope.setText(imageMetadata.getMicroscopeName());
+		DateLabel.setText(imageMetadata.getCollectionDate());
+		SourcePath.setText(imageMetadata.getSourceDirectory());
 		
 		//Update DataTable
 		DataTableModel.fireTableStructureChanged();
@@ -807,18 +807,18 @@ public class ImageMetaDataPanel extends JPanel {
 			TagTable.getColumnModel().getColumn(i).sizeWidthToFit();
 		
 		//Update Comments
-		Notes.setText(imageMetaData.getNotes());
+		Notes.setText(imageMetadata.getNotes());
 				
 		//Update Log
-		log.setText(imageMetaData.getLog());
+		log.setText(imageMetadata.getLog());
 		
 	}
 	
-	private void filterImageMetaDataIndex() {
+	private void filterImageMetadataIndex() {
         RowFilter<AbstractTableModel, Object> rf = null;
         //If current expression doesn't parse, don't update.
         try {
-        	String searchString = imageMetaDataSearchField.getText();
+        	String searchString = imageMetadataSearchField.getText();
         	
         	if (searchString.contains(",")) {
 	        	String[] searchlist = searchString.split(",");
@@ -836,17 +836,17 @@ public class ImageMetaDataPanel extends JPanel {
         } catch (java.util.regex.PatternSyntaxException e) {
             return;
         }
-        imageMetaDataSorter.setRowFilter(rf);
-        imageMetaDataIndex.updateUI();
+        imageMetadataSorter.setRowFilter(rf);
+        imageMetadataIndex.updateUI();
     }
 	
 	//getters and setters
-	public void setImageMetaData(MARSImageMetaData imageMetaData) {
-		this.imageMetaData = imageMetaData;
+	public void setImageMetadata(MarsImageMetadata imageMetadata) {
+		this.imageMetadata = imageMetadata;
 	}
 	
-	public MARSImageMetaData getImageMetaData() {
-		return imageMetaData;
+	public MarsImageMetadata getImageMetadata() {
+		return imageMetadata;
 	}
 	
 	public void resizeColumnWidth(JTable table) {

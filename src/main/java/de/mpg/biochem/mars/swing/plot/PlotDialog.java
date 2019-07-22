@@ -41,7 +41,7 @@ import java.awt.Color;
 import java.lang.reflect.Field;
 import java.util.Vector;
 
-import de.mpg.biochem.mars.table.MARSResultsTable;
+import de.mpg.biochem.mars.table.MarsTable;
 
 public class PlotDialog extends GenericDialog implements DialogListener {
 	private static final long serialVersionUID = 1L;
@@ -72,7 +72,7 @@ public class PlotDialog extends GenericDialog implements DialogListener {
 	
 	private boolean groupsOption = false;
 	
-	public PlotDialog(String dialogTitle, MARSResultsTable table, int curveNumber, boolean groupsOption) {
+	public PlotDialog(String dialogTitle, MarsTable table, int curveNumber, boolean groupsOption) {
 		super(dialogTitle);
 		
 		this.groupsOption = groupsOption;

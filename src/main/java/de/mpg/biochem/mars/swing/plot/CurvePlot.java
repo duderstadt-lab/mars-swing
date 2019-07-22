@@ -37,7 +37,7 @@ import javax.swing.JPanel;
 
 import de.mpg.biochem.mars.molecule.Molecule;
 import de.mpg.biochem.mars.swing.plot.Plot.Type;
-import de.mpg.biochem.mars.table.MARSResultsTable;
+import de.mpg.biochem.mars.table.MarsTable;
 
 //This will hold single and multicurve plots that go in the Plot panel of the
 //Molecule Archive window...
@@ -117,7 +117,7 @@ public class CurvePlot extends JPanel {
 			break;
 		}
 		
-		MARSResultsTable segmentsTable = molecule.getSegmentsTable(props.xColumnName(), props.yColumnName());
+		MarsTable segmentsTable = molecule.getSegmentsTable(props.xColumnName(), props.yColumnName());
 		
 		if (props.drawSegments() && segmentsTable != null) {
 			

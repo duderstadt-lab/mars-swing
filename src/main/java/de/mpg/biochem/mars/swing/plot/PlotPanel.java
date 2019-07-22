@@ -51,7 +51,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import de.mpg.biochem.mars.molecule.Molecule;
-import de.mpg.biochem.mars.table.MARSResultsTable;
+import de.mpg.biochem.mars.table.MarsTable;
 
 public class PlotPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
@@ -161,7 +161,7 @@ public class PlotPanel extends JPanel {
 			break;
 		}
 		
-		MARSResultsTable segmentsTable = molecule.getSegmentsTable(props.xColumnName(), props.yColumnName());
+		MarsTable segmentsTable = molecule.getSegmentsTable(props.xColumnName(), props.yColumnName());
 		
 		if (props.drawSegments() && segmentsTable != null) {
 			

@@ -69,11 +69,11 @@ import org.scijava.ui.UIService;
 import de.mpg.biochem.mars.swing.plot.*;
 import de.mpg.biochem.mars.table.*;
 
-public class MARSResultsTableSwingFrame implements ActionListener, MARSResultsTableWindow {
-	MARSResultsTable results;
+public class MarsTableSwingFrame implements ActionListener, MarsTableWindow {
+	MarsTable results;
 	
 	@Parameter
-	ResultsTableService resultsTableService;
+	MarsTableService marsTableService;
 	
     @Parameter
     private UIService uiService;
@@ -100,10 +100,10 @@ public class MARSResultsTableSwingFrame implements ActionListener, MARSResultsTa
 	static int pos_y = 130;
 	static int offsetX = 0;
 	
-	public MARSResultsTableSwingFrame(String name, MARSResultsTable results, ResultsTableService resultsTableService) {
+	public MarsTableSwingFrame(String name, MarsTable results, MarsTableService marsTableService) {
 		this.results = results;
-		this.resultsTableService = resultsTableService;
-		this.uiService = resultsTableService.getUIService();
+		this.marsTableService = marsTableService;
+		this.uiService = marsTableService.getUIService();
 		results.setWindow(this);
 		createFrame(name);
 		
@@ -255,7 +255,7 @@ public class MARSResultsTableSwingFrame implements ActionListener, MARSResultsTa
 		frame.setVisible(true);
 	}
 	
-	public MARSResultsTable getResults() {
+	public MarsTable getResults() {
 		return results;
 	}
 	
@@ -296,7 +296,7 @@ public class MARSResultsTableSwingFrame implements ActionListener, MARSResultsTa
 		
 		//This is not working properly in the current ImageJ API, I am not sure why
 		//File file = new File(filename);
-		//file = resultsTableService.getUIService().chooseFile(file, FileWidget.SAVE_STYLE);
+		//file = marsTableService.getUIService().chooseFile(file, FileWidget.SAVE_STYLE);
 		
 		SaveDialog sd = new SaveDialog("Save Table", frame.getTitle(), ".csv");
         String file = sd.getFileName();
@@ -321,7 +321,7 @@ public class MARSResultsTableSwingFrame implements ActionListener, MARSResultsTa
 	
 	public void rename(String name) {
 		if (name != null) {
-			if (resultsTableService.rename(frame.getTitle(), name)) {
+			if (marsTableService.rename(frame.getTitle(), name)) {
 				if (!uiService.isHeadless())
 					WindowManager.removeWindow(frame);
 				
@@ -334,7 +334,7 @@ public class MARSResultsTableSwingFrame implements ActionListener, MARSResultsTa
 	}
 	
 	public void close() {
-		resultsTableService.removeResultsTable(results.getName());
+		marsTableService.removeResultsTable(results.getName());
 		frame.setVisible(false);
 		frame.dispose();
 		

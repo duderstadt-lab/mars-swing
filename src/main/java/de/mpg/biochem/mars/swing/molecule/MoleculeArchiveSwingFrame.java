@@ -80,7 +80,7 @@ import org.scijava.widget.FileWidget;
 
 import de.mpg.biochem.mars.swing.plot.PlotDialog;
 import de.mpg.biochem.mars.swing.plot.PlotProperties;
-import de.mpg.biochem.mars.table.MARSResultsTable;
+import de.mpg.biochem.mars.table.MarsTable;
 import de.mpg.biochem.mars.molecule.*;
 import ij.WindowManager;
 import ij.gui.GenericDialog;
@@ -102,7 +102,7 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
     @Parameter
     private RoiManager roiManager;
 
-    private MoleculeArchive archive;
+    private MoleculeArchive<Molecule, MarsImageMetadata, MoleculeArchiveProperties> archive;
 	
     private boolean lockArchive = false;
 	private JFrame frame;
@@ -112,7 +112,7 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 	private JTabbedPane propertiesTabs;
 	private JTextArea indexes;
 	
-	private ImageMetaDataPanel imageMetaDataPanel;
+	private ImageMetadataPanel imageMetadataPanel;
 	
 	private MoleculePanel moleculePanel;
 	
@@ -131,7 +131,7 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 	
 	//private JMenuItem renameMenuItem = new JMenuItem("Rename");
 	
-	//private JMenuItem addMetaDataMenuItem = new JMenuItem("Add ImageMetaData");
+	//private JMenuItem addMetadataMenuItem = new JMenuItem("Add ImageMetadata");
 	
 	private JMenuItem singleCurveMenuItem = new JMenuItem("Single Curve");
 	private JMenuItem multiCurveMenuItem = new JMenuItem("Multiple Curves");
@@ -197,7 +197,7 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
     	//We could just update the selected tab but it probably doesn't matter much.
 		propertiesTabs = archiveProperties();
 		tabbedPane.setComponentAt(0, propertiesTabs);
-        imageMetaDataPanel.updateAll();
+        imageMetadataPanel.updateAll();
         moleculePanel.updateAll();
         comments.setText(archive.getComments());
 	}
@@ -206,8 +206,8 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 		propertiesTabs = archiveProperties();
 		tabbedPane.addTab("Properties", propertiesTabs);
 		
-		imageMetaDataPanel = new ImageMetaDataPanel(archive);
-		tabbedPane.addTab("ImageMetaData", imageMetaDataPanel);
+		imageMetadataPanel = new ImageMetadataPanel(archive);
+		tabbedPane.addTab("ImageMetadata", imageMetadataPanel);
 		
 		moleculePanel = new MoleculePanel(archive);
 		tabbedPane.addTab("Molecules", moleculePanel);
@@ -224,7 +224,7 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 	        		tabbedPane.setSelectedIndex(0);
 	        	else {
 	        		moleculePanel.saveCurrentRecord();
-	        		imageMetaDataPanel.saveCurrentRecord();
+	        		imageMetadataPanel.saveCurrentRecord();
 	        		archive.updateProperties();
 	        		update();
 	        	}
@@ -275,7 +275,7 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 	         public void actionPerformed(ActionEvent e) {
 	        	 if (!lockArchive) {
 		        	 moleculePanel.saveCurrentRecord();
-		        	 imageMetaDataPanel.saveCurrentRecord();
+		        	 imageMetadataPanel.saveCurrentRecord();
 		        	 
 		        	 try {
 			 			 if (archive.getFile() != null) {
@@ -306,7 +306,7 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 	         public void actionPerformed(ActionEvent e) {
 	        	 if (!lockArchive) {
 	        		    moleculePanel.saveCurrentRecord();
-		        	    imageMetaDataPanel.saveCurrentRecord();
+		        	    imageMetadataPanel.saveCurrentRecord();
 		        	    
 		        	    String fileName = archive.getName();
 		        	    if (fileName.endsWith(".store"))
@@ -331,7 +331,7 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 	         public void actionPerformed(ActionEvent e) {
 	        	 if (!lockArchive) {
 	        		    moleculePanel.saveCurrentRecord();
-		        	    imageMetaDataPanel.saveCurrentRecord();
+		        	    imageMetadataPanel.saveCurrentRecord();
 	        		 	
 	        		 	String name = archive.getName();
 	        		 	
@@ -351,12 +351,12 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 		
 		JMenu plotMenu = new JMenu("Plot");
 		mb.add(plotMenu);
-		//toolsMenu.add(addMetaDataMenuItem);
+		//toolsMenu.add(addMetadataMenuItem);
 		/*
-		addMetaDataMenuItem.addActionListener(new ActionListener() {
+		addMetadataMenuItem.addActionListener(new ActionListener() {
 	         public void actionPerformed(ActionEvent e) {
 	        	 //File imageFolder = uiService.chooseFile(archive.getFile(), FileWidget.DIRECTORY_STYLE);
-	 			 //archive.addImageMetaData(new ImageMetaData(imageFolder, moleculeArchiveService, "Odin"));
+	 			 //archive.addImageMetadata(new ImageMetadata(imageFolder, moleculeArchiveService, "Odin"));
 	          }
 	       });
 	       */
@@ -589,7 +589,7 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 		     		
 		     		String mergeNote = "Merged " + mergeUIDs.size() + " molecules \n";
 		     		
-		     		MARSResultsTable mergedDataTable = archive.get(mergeUIDs.get(0)).getDataTable();
+		     		MarsTable mergedDataTable = archive.get(mergeUIDs.get(0)).getDataTable();
 		     		
 		     		HashSet<Double> sliceNumbers = new HashSet<Double>();
 		     		
@@ -601,7 +601,7 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 		     		mergeNote += mergeUIDs.get(0).substring(0, 5) + " : slices " + mergedDataTable.getValue("slice", 0) + " " + mergedDataTable.getValue("slice", mergedDataTable.getRowCount()-1) + "\n";
 		     		
 		            for (int i = 1; i < mergeUIDs.size() ; i++) {
-		            	MARSResultsTable nextDataTable = archive.get(mergeUIDs.get(i)).getDataTable();
+		            	MarsTable nextDataTable = archive.get(mergeUIDs.get(i)).getDataTable();
 		            	
 		            	for (int row=0;row<nextDataTable.getRowCount();row++) {
 		            		if (!sliceNumbers.contains(nextDataTable.getValue("slice", row))) {
@@ -637,7 +637,7 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 	         public void actionPerformed(ActionEvent e) {
 	        	 if (!lockArchive) {
 		        	 moleculePanel.saveCurrentRecord();
-		        	 imageMetaDataPanel.saveCurrentRecord();
+		        	 imageMetadataPanel.saveCurrentRecord();
 	        	 }
 	        	 
 	        	 update();
@@ -650,7 +650,7 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 	         public void actionPerformed(ActionEvent e) {
 	        	 if (!lockArchive) {
 		        	moleculePanel.saveCurrentRecord();
-		        	imageMetaDataPanel.saveCurrentRecord();
+		        	imageMetadataPanel.saveCurrentRecord();
 		        	 
 		        	try {
 						archive.rebuildIndexes();
@@ -675,7 +675,7 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 	        		 
 	        		 Molecule mol = moleculePanel.getMolecule();
 	        		 if (mol != null) {
-	        			MARSResultsTable datatable = mol.getDataTable();
+	        			MarsTable datatable = mol.getDataTable();
 	        			 
 	        			int x0 = -6;
 			     		int y0 = -6;
@@ -771,7 +771,7 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 		panel.add(new JLabel("Number of Molecules                " + archive.getNumberOfMolecules()), gbc);
 		
 		gbc.gridy += 1;
-		panel.add(new JLabel("Number of Image MetaData Items     " + archive.getNumberOfImageMetaDataRecords()), gbc);
+		panel.add(new JLabel("Number of Image Metadata Items     " + archive.getNumberOfImageMetadataRecords()), gbc);
 		
 		gbc.gridy += 1;
 		panel.add(new JLabel("                                   "), gbc);
@@ -1036,7 +1036,7 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 		moleculeArchiveService.removeArchive(archive.getName());
 		
 		if (archive.isVirtual()) {
-			imageMetaDataPanel.saveCurrentRecord();
+			imageMetadataPanel.saveCurrentRecord();
 			moleculePanel.saveCurrentRecord();
 			try {
 				archive.save();

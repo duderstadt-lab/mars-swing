@@ -45,7 +45,7 @@ import de.mpg.biochem.mars.molecule.*;
  * @author Karl Duderstadt
  */
 @Plugin(type = Display.class, priority = Priority.NORMAL)
-public class MoleculeArchiveSwingDisplay extends AbstractDisplay<MoleculeArchive> implements Display<MoleculeArchive> {
+public class MoleculeArchiveSwingDisplay extends AbstractDisplay<MoleculeArchive<?,?,?>> implements Display<MoleculeArchive<?,?,?>> {
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public MoleculeArchiveSwingDisplay() {

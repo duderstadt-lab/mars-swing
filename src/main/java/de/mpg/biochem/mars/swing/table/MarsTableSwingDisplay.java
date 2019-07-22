@@ -1,5 +1,4 @@
 /*******************************************************************************
- * Copyright (C) 2019, Karl Duderstadt
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -30,60 +29,38 @@
  ******************************************************************************/
 package de.mpg.biochem.mars.swing.table;
 
-import org.scijava.plugin.Parameter;
-import org.scijava.ui.UIService;
 import org.scijava.Priority;
+import org.scijava.display.AbstractDisplay;
 import org.scijava.display.Display;
-import org.scijava.log.LogService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
-import org.scijava.ui.UIService;
-import org.scijava.ui.UserInterface;
-import org.scijava.ui.viewer.AbstractDisplayViewer;
-import org.scijava.ui.viewer.DisplayViewer;
 
-import net.imagej.display.WindowService;
-
+import ij.text.TextWindow;
 import de.mpg.biochem.mars.table.*;
 
-@Plugin(type = DisplayViewer.class, priority = Priority.NORMAL)
-public class MARSResultsTableSwingView extends AbstractDisplayViewer<MARSResultsTable> implements DisplayViewer<MARSResultsTable> {
+/**
+ * Display for {@link MarsTable}. This ensures that uiService.show() for a MarsTable will automatically be detected and 
+ * call the view method in MarsTableSwingView to make our custom window with custom menus.
+ * 
+ * @author Karl Duderstadt
+ */
+@Plugin(type = Display.class, priority = Priority.NORMAL)
+public class MarsTableSwingDisplay extends AbstractDisplay<MarsTable> implements Display<MarsTable> {
 	
-	@Parameter
-    private ResultsTableService resultsTableService;
-	
-	//This method is called to create and display a window
-	//here we override it to make sure that calls like uiService.show( .. for MARSResultsTable 
-	//will use this method automatically..
-	@Override
-	public void view(final UserInterface ui, final Display<?> d) {
-		MARSResultsTable results = (MARSResultsTable)d.get(0);
-		results.setName(d.getName());
-
-		resultsTableService.addResultsTable(results);
-		d.setName(results.getName());
-		
-		//We also create a new window since we assume it is a new table...
-		new MARSResultsTableSwingFrame(results.getName(), results, resultsTableService);
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public MarsTableSwingDisplay() {
+		super((Class) MarsTable.class);
 	}
 
+	// -- Display methods --
+
 	@Override
-	public boolean canView(final Display<?> d) {
-		if (d instanceof MARSResultsTableSwingDisplay) {
+	public boolean canDisplay(final Class<?> c) {
+		if (c.equals(MarsTable.class)) {
 			return true;
-		} else {
-			return false;
+		} else { 
+			return super.canDisplay(c);
 		}
 	}
-	
-	@Override
-	public MARSResultsTableSwingDisplay getDisplay() {
-		return (MARSResultsTableSwingDisplay) super.getDisplay();
-	}
 
-	@Override
-	public boolean isCompatible(UserInterface arg0) {
-		//Needs to be updated if all contexts are to be enabled beyond ImageJ
-		return true;
-	}
 }

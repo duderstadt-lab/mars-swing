@@ -30,38 +30,50 @@
  ******************************************************************************/
 package de.mpg.biochem.mars.swing.table;
 
-import org.scijava.Priority;
-import org.scijava.display.AbstractDisplay;
-import org.scijava.display.Display;
+import org.scijava.app.StatusService;
+import org.scijava.command.Command;
+import org.scijava.log.LogService;
+import org.scijava.menu.MenuConstants;
+import org.scijava.plugin.Menu;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.scijava.ui.UIService;
 
-import ij.text.TextWindow;
 import de.mpg.biochem.mars.table.*;
 
-/**
- * Display for {@link MARSResultsTable}. This ensures that uiService.show() for a MARSResultsTable will automatically be detected and 
- * call the view method in MARSResultsTableSwingView to make our custom window with custom menus.
- * 
- * @author Karl Duderstadt
- */
-@Plugin(type = Display.class, priority = Priority.NORMAL)
-public class MARSResultsTableSwingDisplay extends AbstractDisplay<MARSResultsTable> implements Display<MARSResultsTable> {
+@Plugin(type = Command.class, label = "Drag & Drop Window", menu = {
+		@Menu(label = MenuConstants.PLUGINS_LABEL, weight = MenuConstants.PLUGINS_WEIGHT,
+				mnemonic = MenuConstants.PLUGINS_MNEMONIC),
+		@Menu(label = "MoleculeArchive Suite", weight = MenuConstants.PLUGINS_WEIGHT,
+			mnemonic = 's'),
+		@Menu(label = "Table Utils", weight = 10,
+			mnemonic = 't'),
+		@Menu(label = "Drag & Drop Window", weight = 10, mnemonic = 'd')})
+public class MarsTableDropWindowCommand implements Command {
 	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public MARSResultsTableSwingDisplay() {
-		super((Class) MARSResultsTable.class);
-	}
+	@Parameter
+    private MarsTableService marsTableService;
+	
+    @Parameter
+    private UIService uiService;
+    
+    @Parameter
+    private StatusService statusService;
+    
+    @Parameter
+    private LogService logService;
 
-	// -- Display methods --
-
+	Thread instance;
+	
 	@Override
-	public boolean canDisplay(final Class<?> c) {
-		if (c.equals(MARSResultsTable.class)) {
-			return true;
-		} else { 
-			return super.canDisplay(c);
-		}
+	public void run() {
+		TableDropRunner runner = new TableDropRunner();
+		runner.setStatusService(statusService);
+		runner.setTableService(marsTableService);
+		runner.setUIService(uiService);
+		runner.setLogService(logService);
+		instance = new Thread(runner, "DragDrop");
+        instance.start();
 	}
 
 }
