@@ -271,7 +271,12 @@ public class MarsTableSwingFrame implements ActionListener, MarsTableWindow {
 		} else if (e.getSource() == saveAsMenuItem) {
 			saveAs();
 		} else if (e.getSource() == exportToJSONMenuItem) {
-			exportToJSON();
+			try {
+				exportToJSON();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 		} else if (e.getSource() == singleCurveMenuItem) {
 			PlotDialog dialog = new PlotDialog("Curve Plot", results, 1, true);
 			dialog.showDialog();
@@ -302,21 +307,15 @@ public class MarsTableSwingFrame implements ActionListener, MarsTableWindow {
         String file = sd.getFileName();
         if (file==null) return false;
         String path = sd.getDirectory() + file;
-		try {
-			results.saveAs(path);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return false;
-		}
+		results.saveAs(new File(path));
 		return true;
 	}
-	protected boolean exportToJSON() {
+	protected void exportToJSON() throws IOException {
 		SaveDialog sd = new SaveDialog("Export to JSON", frame.getTitle(), ".json");
         String file = sd.getFileName();
-        if (file==null) return false;
+        if (file==null) return;
         String path = sd.getDirectory() + file;
-		return results.saveAsJSON(path);
+		results.saveAsJSON(path);
 	}
 	
 	public void rename(String name) {
@@ -334,7 +333,7 @@ public class MarsTableSwingFrame implements ActionListener, MarsTableWindow {
 	}
 	
 	public void close() {
-		marsTableService.removeResultsTable(results.getName());
+		marsTableService.removeTable(results.getName());
 		frame.setVisible(false);
 		frame.dispose();
 		

@@ -60,7 +60,7 @@ public class MarsTableSwingView extends AbstractDisplayViewer<MarsTable> impleme
 		MarsTable results = (MarsTable)d.get(0);
 		results.setName(d.getName());
 
-		marsTableService.addResultsTable(results);
+		marsTableService.addTable(results);
 		d.setName(results.getName());
 		
 		//We also create a new window since we assume it is a new table...

@@ -48,9 +48,9 @@ import net.imagej.display.WindowService;
 
 import de.mpg.biochem.mars.molecule.*;
 
-
+@SuppressWarnings("rawtypes")
 @Plugin(type = DisplayViewer.class, priority = Priority.NORMAL)
-public class MoleculeArchiveSwingView extends AbstractDisplayViewer<MoleculeArchive<?,?,?>> implements DisplayViewer<MoleculeArchive<?,?,?>> {
+public class MoleculeArchiveSwingView extends AbstractDisplayViewer<MoleculeArchive> implements DisplayViewer<MoleculeArchive> {
 	
 	@Parameter
     private MoleculeArchiveService moleculeArchiveService;
@@ -60,10 +60,8 @@ public class MoleculeArchiveSwingView extends AbstractDisplayViewer<MoleculeArch
 	//will use this method automatically..
 	@Override
 	public void view(final UserInterface ui, final Display<?> d) {	
-		MoleculeArchive<?,?,?> archive = (MoleculeArchive<?,?,?>)d.get(0);
+		MoleculeArchive archive = (MoleculeArchive)d.get(0);
 		archive.setName(d.getName());
-
-		moleculeArchiveService.addArchive(archive);
 		d.setName(archive.getName());
 		
 		new MoleculeArchiveSwingFrame(archive, moleculeArchiveService);
