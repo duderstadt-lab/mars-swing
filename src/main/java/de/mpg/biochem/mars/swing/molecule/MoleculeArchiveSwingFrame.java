@@ -340,9 +340,11 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 	        		 	
 	        		 	String name = archive.getName();
 	        		 	
-	        		 	if (!name.endsWith(".store")) {
-		        		 	name += ".store";
-		        		 }
+	        		 	if (name.endsWith(".yama")) {
+	        		 		name += ".store";
+	        		 	} else if (!name.endsWith(".yama.store")) {
+		        		 	name += ".yama.store";
+		        		}
 	        		 
 		 				try {
 							saveAsVirtualStore(new File(name));
