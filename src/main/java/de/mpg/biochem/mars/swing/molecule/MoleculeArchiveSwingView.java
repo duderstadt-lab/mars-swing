@@ -36,6 +36,7 @@ import org.scijava.ui.UIService;
 import org.scijava.display.Display;
 import org.scijava.display.DisplayService;
 import org.scijava.log.LogService;
+import org.scijava.object.ObjectService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.scijava.ui.UIService;
@@ -63,6 +64,9 @@ public class MoleculeArchiveSwingView extends AbstractDisplayViewer<MoleculeArch
 		MoleculeArchive archive = (MoleculeArchive)d.get(0);
 		archive.setName(d.getName());
 		d.setName(archive.getName());
+		
+		if (!moleculeArchiveService.contains(archive.getName()))
+			moleculeArchiveService.addArchive(archive);
 		
 		new MoleculeArchiveSwingFrame(archive, moleculeArchiveService);
 	}

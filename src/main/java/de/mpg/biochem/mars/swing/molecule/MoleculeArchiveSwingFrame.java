@@ -73,6 +73,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import org.scijava.object.ObjectService;
 import org.scijava.plugin.Parameter;
 import org.scijava.prefs.PrefService;
 import org.scijava.ui.UIService;
@@ -92,6 +93,9 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 	
 	@Parameter
     private MoleculeArchiveService moleculeArchiveService;
+	
+	@Parameter
+	private ObjectService objectService;
 	
     @Parameter
     private UIService uiService;
@@ -168,6 +172,7 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 		this.archive = archive;
 		archive.setWindow(this);
 		this.moleculeArchiveService = moleculeArchiveService;
+		this.moleculeArchiveService.getContext().inject(this);
 		this.prefService = 	moleculeArchiveService.getPrefService();
 		this.uiService = moleculeArchiveService.getUIService();
 
@@ -768,6 +773,9 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 		panel.add(new JLabel("Archive Name                       " + archive.getName()), gbc);
 		
 		gbc.gridy += 1;
+		panel.add(new JLabel("Archive Type                       " + archive.getClass().getName()), gbc);
+		
+		gbc.gridy += 1;
 		panel.add(new JLabel("Number of Molecules                " + archive.getNumberOfMolecules()), gbc);
 		
 		gbc.gridy += 1;
@@ -882,10 +890,10 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 	        summary += "\n\n";
 		}
 		
-		if (archive.getProperties().getSegmnetTableNames().size() > 0) {
+		if (archive.getProperties().getSegmentTableNames().size() > 0) {
 			String segmentTableColumns = "Molecule Segment Tables:\n";
 		    int characters = 0;
-	        for (ArrayList<String> name : archive.getProperties().getSegmnetTableNames()) {
+	        for (ArrayList<String> name : archive.getProperties().getSegmentTableNames()) {
 	        	String title = name.get(0) + " vs " + name.get(1);
 	        	segmentTableColumns += title + ", ";
 	            characters += title.length() + 2;
@@ -1033,7 +1041,7 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 	}
 	
 	public void close() {
-		moleculeArchiveService.removeArchive(archive.getName());
+		moleculeArchiveService.removeArchive(archive);
 		
 		if (archive.isVirtual()) {
 			imageMetadataPanel.saveCurrentRecord();

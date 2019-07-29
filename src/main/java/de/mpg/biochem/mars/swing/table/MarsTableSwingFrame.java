@@ -333,7 +333,7 @@ public class MarsTableSwingFrame implements ActionListener, MarsTableWindow {
 	}
 	
 	public void close() {
-		marsTableService.removeTable(results.getName());
+		marsTableService.removeTable(results);
 		frame.setVisible(false);
 		frame.dispose();
 		
