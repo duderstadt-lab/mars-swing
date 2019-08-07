@@ -46,7 +46,7 @@ public class PlotData {
 	public String groupColumn;
 	public int type = 0;
 
-	public MARSResultsTable table;
+	public MarsTable table;
 	public double[] xs, seg_xs;
 	public double[] ys, seg_ys;
 	public Map<Integer, GroupIndices> GroupIndex, SegmentGroupIndex;
@@ -59,7 +59,7 @@ public class PlotData {
 	public boolean hasGroups;
 	
 	//This is way too long..... Need to either pass Plotdialog or do something else to simplify.
-	public PlotData(MARSResultsTable table, String xColumn, String yColumn, Color color, String groupColumn, int type, String tableTitle) {
+	public PlotData(MarsTable table, String xColumn, String yColumn, Color color, String groupColumn, int type, String tableTitle) {
 		this.table = table;
 		this.xColumn = xColumn;
 		this.yColumn = yColumn;
@@ -78,7 +78,7 @@ public class PlotData {
 		
 		if (!groupColumn.equals("none")) {
 			hasGroups = true;
-			GroupIndex = ResultsTableService.find_group_indices(table, groupColumn);
+			GroupIndex = MarsTableService.find_group_indices(table, groupColumn);
 			groupNumbers = new ArrayList<Integer>();
 			
 			//Let's get a list of all GroupNumbers (usually molecule numbers)
@@ -161,7 +161,7 @@ public class PlotData {
 		return yColumn;
 	}
 	
-	public MARSResultsTable getTable() {
+	public MarsTable getTable() {
 		return table;
 	}
 }

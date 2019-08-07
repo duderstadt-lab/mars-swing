@@ -88,7 +88,7 @@ import de.mpg.biochem.mars.swing.plot.BoundsChangedListener;
 import de.mpg.biochem.mars.swing.plot.CurvePlot;
 import de.mpg.biochem.mars.swing.plot.PlotPanel;
 import de.mpg.biochem.mars.swing.plot.PlotProperties;
-import de.mpg.biochem.mars.table.MARSResultsTable;
+import de.mpg.biochem.mars.table.MarsTable;
 import de.mpg.biochem.mars.molecule.*;
 import ij.ImagePlus;
 import ij.gui.ImageCanvas;
@@ -96,7 +96,7 @@ import ij.gui.ImageLayout;
 
 public class MoleculePanel extends JPanel implements BoundsChangedListener, MoleculeChangedListener {
 
-	private JTextField UIDLabel, ImageMetaDataUIDLabel;
+	private JTextField UIDLabel, ImageMetadataUIDLabel;
 	
 	private JTabbedPane dataANDPlot;
 	private JScrollPane tablePane;
@@ -131,7 +131,7 @@ public class MoleculePanel extends JPanel implements BoundsChangedListener, Mole
 	private JLabel recordCount;
 	
 	private Molecule molecule;
-	private MoleculeArchive archive;
+	private MoleculeArchive<Molecule, MarsImageMetadata, MoleculeArchiveProperties> archive;
 	
 	private boolean moleculeRecordChanged;
 	
@@ -143,9 +143,9 @@ public class MoleculePanel extends JPanel implements BoundsChangedListener, Mole
 	
 	private int moleculeCount;
 	
-	private Molecule DummyMolecule = new Molecule("unknown");
+	private Molecule DummyMolecule = new SingleMolecule("unknown");
 	
-	public MoleculePanel(MoleculeArchive archive) {
+	public MoleculePanel(MoleculeArchive<Molecule, MarsImageMetadata, MoleculeArchiveProperties> archive) {
 		this.archive = archive;
 		if (archive.getNumberOfMolecules() > 0) {
 			molecule = archive.get(0);
@@ -154,8 +154,8 @@ public class MoleculePanel extends JPanel implements BoundsChangedListener, Mole
 		}
 		moleculeRecordChanged = false;
 		
-		DummyMolecule.setDataTable(new MARSResultsTable());
-		DummyMolecule.setImageMetaDataUID("XXXXXXXXXX");
+		DummyMolecule.setDataTable(new MarsTable());
+		DummyMolecule.setImageMetadataUID("XXXXXXXXXX");
 			
 		moleculeCount = archive.getNumberOfMolecules();
 		buildPanel();
@@ -178,7 +178,7 @@ public class MoleculePanel extends JPanel implements BoundsChangedListener, Mole
 				} else if (columnIndex == 2) {
 					return archive.getTagList(archive.getUIDAtIndex(rowIndex));
 				} else if (columnIndex == 3) {
-					return archive.getImageMetaDataUIDforMolecule(archive.getUIDAtIndex(rowIndex));
+					return archive.getImageMetadataUIDforMolecule(archive.getUIDAtIndex(rowIndex));
 				}
 				return null;
 			}
@@ -393,20 +393,20 @@ public class MoleculePanel extends JPanel implements BoundsChangedListener, Mole
 		northPan.add(UIDLabel, gbcNorth);
 		
 		gbcNorth.gridy += 1;
-		JLabel imageMetaName = new JLabel("ImageMetaDataUID");
+		JLabel imageMetaName = new JLabel("ImageMetadataUID");
 		imageMetaName.setFont(new Font("Menlo", Font.BOLD, 12));
 		northPan.add(imageMetaName, gbcNorth);
 		
 		gbcNorth.gridy += 1;
 		gbcNorth.insets = new Insets(5, 0, 10, 0);
-		ImageMetaDataUIDLabel = new JTextField("" + molecule.getImageMetaDataUID());
-		ImageMetaDataUIDLabel.setFont(new Font("Menlo", Font.PLAIN, 12));
-		ImageMetaDataUIDLabel.setEditable(false);
-		ImageMetaDataUIDLabel.setBackground(null);
-		int MetaUID_StringWidth = molecule.getImageMetaDataUID().length() * 8;
+		ImageMetadataUIDLabel = new JTextField("" + molecule.getImageMetadataUID());
+		ImageMetadataUIDLabel.setFont(new Font("Menlo", Font.PLAIN, 12));
+		ImageMetadataUIDLabel.setEditable(false);
+		ImageMetadataUIDLabel.setBackground(null);
+		int MetaUID_StringWidth = molecule.getImageMetadataUID().length() * 8;
 		Dimension MetaUID_dim = new Dimension(MetaUID_StringWidth, 16);
-		ImageMetaDataUIDLabel.setMinimumSize(MetaUID_dim);
-		northPan.add(ImageMetaDataUIDLabel, gbcNorth);
+		ImageMetadataUIDLabel.setMinimumSize(MetaUID_dim);
+		northPan.add(ImageMetadataUIDLabel, gbcNorth);
 		
 		globalPan.add(northPan, BorderLayout.NORTH);
 		
@@ -706,7 +706,7 @@ public class MoleculePanel extends JPanel implements BoundsChangedListener, Mole
 		return tagPanel;
 	}
 	
-	public JScrollPane buildSegmentsTable(MARSResultsTable segmentsTable) {	
+	public JScrollPane buildSegmentsTable(MarsTable segmentsTable) {	
 		AbstractTableModel SegmentTableModel = new AbstractTableModel() {
 			private static final long serialVersionUID = 1L;
 
@@ -851,8 +851,8 @@ public class MoleculePanel extends JPanel implements BoundsChangedListener, Mole
 		//Update molecule labels
 		UIDLabel.setText(molecule.getUID());
 		UIDLabel.repaint();
-		ImageMetaDataUIDLabel.setText(molecule.getImageMetaDataUID());
-		ImageMetaDataUIDLabel.repaint();
+		ImageMetadataUIDLabel.setText(molecule.getImageMetadataUID());
+		ImageMetadataUIDLabel.repaint();
 		
 		//Update DataTable
 		DataTableModel.fireTableStructureChanged();

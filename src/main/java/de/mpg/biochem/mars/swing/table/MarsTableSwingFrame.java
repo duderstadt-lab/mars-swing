@@ -69,11 +69,11 @@ import org.scijava.ui.UIService;
 import de.mpg.biochem.mars.swing.plot.*;
 import de.mpg.biochem.mars.table.*;
 
-public class MARSResultsTableSwingFrame implements ActionListener, MARSResultsTableWindow {
-	MARSResultsTable results;
+public class MarsTableSwingFrame implements ActionListener, MarsTableWindow {
+	MarsTable results;
 	
 	@Parameter
-	ResultsTableService resultsTableService;
+	MarsTableService marsTableService;
 	
     @Parameter
     private UIService uiService;
@@ -100,10 +100,10 @@ public class MARSResultsTableSwingFrame implements ActionListener, MARSResultsTa
 	static int pos_y = 130;
 	static int offsetX = 0;
 	
-	public MARSResultsTableSwingFrame(String name, MARSResultsTable results, ResultsTableService resultsTableService) {
+	public MarsTableSwingFrame(String name, MarsTable results, MarsTableService marsTableService) {
 		this.results = results;
-		this.resultsTableService = resultsTableService;
-		this.uiService = resultsTableService.getUIService();
+		this.marsTableService = marsTableService;
+		this.uiService = marsTableService.getUIService();
 		results.setWindow(this);
 		createFrame(name);
 		
@@ -255,7 +255,7 @@ public class MARSResultsTableSwingFrame implements ActionListener, MARSResultsTa
 		frame.setVisible(true);
 	}
 	
-	public MARSResultsTable getResults() {
+	public MarsTable getResults() {
 		return results;
 	}
 	
@@ -271,16 +271,24 @@ public class MARSResultsTableSwingFrame implements ActionListener, MARSResultsTa
 		} else if (e.getSource() == saveAsMenuItem) {
 			saveAs();
 		} else if (e.getSource() == exportToJSONMenuItem) {
-			exportToJSON();
+			try {
+				exportToJSON();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 		} else if (e.getSource() == singleCurveMenuItem) {
-			PlotDialog dialog = new PlotDialog("Curve Plot", results, 1, true);
+			ArrayList<String> columnHeadings = marsTableService.getColumnNames();
+        	String[] columnNames = columnHeadings.toArray(new String[columnHeadings.size()]);
+			
+			PlotDialog dialog = new PlotDialog("Curve Plot", columnNames, 1, true);
 			dialog.showDialog();
         	if (dialog.wasCanceled())
      			return;
 
         	dialog.update(dialog);
         	
-    		PlotData curve1 = new PlotData(results, dialog.getXColumnName(), dialog.getNextYColumnName(), dialog.getNextCurveColor(), dialog.getGroupColumn(), dialog.getCurveType(), results.getName());
+    		PlotData curve1 = new PlotData(results, dialog.getNextXColumnName(), dialog.getNextYColumnName(), dialog.getNextCurveColor(), dialog.getGroupColumn(), dialog.getCurveType(), results.getName());
     		
     		ArrayList<PlotData> plot_data = new ArrayList<PlotData>();
     		plot_data.add(curve1);
@@ -296,32 +304,26 @@ public class MARSResultsTableSwingFrame implements ActionListener, MARSResultsTa
 		
 		//This is not working properly in the current ImageJ API, I am not sure why
 		//File file = new File(filename);
-		//file = resultsTableService.getUIService().chooseFile(file, FileWidget.SAVE_STYLE);
+		//file = marsTableService.getUIService().chooseFile(file, FileWidget.SAVE_STYLE);
 		
 		SaveDialog sd = new SaveDialog("Save Table", frame.getTitle(), ".csv");
         String file = sd.getFileName();
         if (file==null) return false;
         String path = sd.getDirectory() + file;
-		try {
-			results.saveAs(path);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return false;
-		}
+		results.saveAs(new File(path));
 		return true;
 	}
-	protected boolean exportToJSON() {
+	protected void exportToJSON() throws IOException {
 		SaveDialog sd = new SaveDialog("Export to JSON", frame.getTitle(), ".json");
         String file = sd.getFileName();
-        if (file==null) return false;
+        if (file==null) return;
         String path = sd.getDirectory() + file;
-		return results.saveAsJSON(path);
+		results.saveAsJSON(path);
 	}
 	
 	public void rename(String name) {
 		if (name != null) {
-			if (resultsTableService.rename(frame.getTitle(), name)) {
+			if (marsTableService.rename(frame.getTitle(), name)) {
 				if (!uiService.isHeadless())
 					WindowManager.removeWindow(frame);
 				
@@ -334,7 +336,7 @@ public class MARSResultsTableSwingFrame implements ActionListener, MARSResultsTa
 	}
 	
 	public void close() {
-		resultsTableService.removeResultsTable(results.getName());
+		marsTableService.removeTable(results);
 		frame.setVisible(false);
 		frame.dispose();
 		

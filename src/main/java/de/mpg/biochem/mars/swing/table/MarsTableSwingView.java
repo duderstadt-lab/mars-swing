@@ -30,50 +30,61 @@
  ******************************************************************************/
 package de.mpg.biochem.mars.swing.table;
 
-import org.scijava.app.StatusService;
-import org.scijava.command.Command;
+import org.scijava.plugin.Parameter;
+import org.scijava.ui.UIService;
+import org.scijava.Priority;
+import org.scijava.display.Display;
 import org.scijava.log.LogService;
-import org.scijava.menu.MenuConstants;
-import org.scijava.plugin.Menu;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.scijava.ui.UIService;
+import org.scijava.ui.UserInterface;
+import org.scijava.ui.viewer.AbstractDisplayViewer;
+import org.scijava.ui.viewer.DisplayViewer;
+
+import net.imagej.display.WindowService;
 
 import de.mpg.biochem.mars.table.*;
 
-@Plugin(type = Command.class, label = "Drag & Drop Window", menu = {
-		@Menu(label = MenuConstants.PLUGINS_LABEL, weight = MenuConstants.PLUGINS_WEIGHT,
-				mnemonic = MenuConstants.PLUGINS_MNEMONIC),
-		@Menu(label = "MoleculeArchive Suite", weight = MenuConstants.PLUGINS_WEIGHT,
-			mnemonic = 's'),
-		@Menu(label = "Table Utils", weight = 10,
-			mnemonic = 't'),
-		@Menu(label = "Drag & Drop Window", weight = 10, mnemonic = 'd')})
-public class ResultsTableDropWindowCommand implements Command {
+@Plugin(type = DisplayViewer.class, priority = Priority.NORMAL)
+public class MarsTableSwingView extends AbstractDisplayViewer<MarsTable> implements DisplayViewer<MarsTable> {
 	
 	@Parameter
-    private ResultsTableService resultsTableService;
+    private MarsTableService marsTableService;
 	
-    @Parameter
-    private UIService uiService;
-    
-    @Parameter
-    private StatusService statusService;
-    
-    @Parameter
-    private LogService logService;
-
-	Thread instance;
-	
+	//This method is called to create and display a window
+	//here we override it to make sure that calls like uiService.show( .. for MarsTable 
+	//will use this method automatically..
 	@Override
-	public void run() {
-		TableDropRunner runner = new TableDropRunner();
-		runner.setStatusService(statusService);
-		runner.setTableService(resultsTableService);
-		runner.setUIService(uiService);
-		runner.setLogService(logService);
-		instance = new Thread(runner, "DragDrop");
-        instance.start();
+	public void view(final UserInterface ui, final Display<?> d) {
+		MarsTable results = (MarsTable)d.get(0);
+		results.setName(d.getName());
+		d.setName(results.getName());
+		
+		if (!marsTableService.contains(results.getName()))
+			marsTableService.addTable(results);
+		
+		//We also create a new window since we assume it is a new table...
+		new MarsTableSwingFrame(results.getName(), results, marsTableService);
 	}
 
+	@Override
+	public boolean canView(final Display<?> d) {
+		if (d instanceof MarsTableSwingDisplay) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	@Override
+	public MarsTableSwingDisplay getDisplay() {
+		return (MarsTableSwingDisplay) super.getDisplay();
+	}
+
+	@Override
+	public boolean isCompatible(UserInterface arg0) {
+		//Needs to be updated if all contexts are to be enabled beyond ImageJ
+		return true;
+	}
 }
