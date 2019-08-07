@@ -86,8 +86,11 @@ public class CurvePlot extends JPanel {
 		plot.setPlotTitle(" ");
 		plot.setMolecule(molecule);
 		
+		ArrayList<String> columnHeadings = molecule.getDataTable().getColumnHeadingList();
+		
 		for (PlotProperties props: plot_properties) {
-			drawCurve(props);
+			if (columnHeadings.contains(props.xColumnName()) && columnHeadings.contains(props.yColumnName()))
+				drawCurve(props);
 		}
 		
 		plot.resetPointPosition();

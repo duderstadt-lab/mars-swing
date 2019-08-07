@@ -372,15 +372,16 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 	         public void actionPerformed(ActionEvent e) {
 	        	 if (!lockArchive) {
 	        		moleculePanel.saveCurrentRecord();
-	        		 
-		        	PlotDialog dialog = new PlotDialog("Curve Plot", archive.get(0).getDataTable(), 1, false);
+	        		ArrayList<String> columnHeadings = moleculeArchiveService.getColumnNames();
+	        		
+		        	PlotDialog dialog = new PlotDialog("Curve Plot", columnHeadings.toArray(new String[columnHeadings.size()]), 1, false);
 		        	dialog.showDialog();
 		        	if (dialog.wasCanceled())
 		     			return;
 		        	
 		        	dialog.update(dialog);
 		        	ArrayList<PlotProperties> props = new ArrayList<PlotProperties>();
-		        	PlotProperties curve1 = new PlotProperties(dialog.getXColumnName(), dialog.getNextYColumnName(), dialog.getNextCurveColor(), dialog.getCurveType(), dialog.getNextSegmentCurveColor());
+		        	PlotProperties curve1 = new PlotProperties(dialog.getNextXColumnName(), dialog.getNextYColumnName(), dialog.getNextCurveColor(), dialog.getCurveType(), dialog.getNextSegmentCurveColor());
 		        	props.add(curve1);
 		        	 
 		        	moleculePanel.addCurvePlot(props);
@@ -404,7 +405,9 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 		     		
 		     		 int curveNum = (int)Numdialog.getNextNumber(); 
 		        	 
-		        	 PlotDialog dialog = new PlotDialog("Curve Plot", archive.get(0).getDataTable(), curveNum, false);
+		     		 ArrayList<String> columnHeadings = moleculeArchiveService.getColumnNames();
+		     		
+		        	 PlotDialog dialog = new PlotDialog("Curve Plot", columnHeadings.toArray(new String[columnHeadings.size()]), curveNum, false);
 		        	 dialog.showDialog();
 		        	 //Need to put this so the final values and properly
 		        	 dialog.update(dialog);
@@ -412,7 +415,7 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 		        	 //Need to add None options for segments curve and then use inputs below and above
 		        	 
 		        	 for (int i=0;i<curveNum;i++) {
-		        		 props.add(new PlotProperties(dialog.getXColumnName(), dialog.getNextYColumnName(), dialog.getNextCurveColor(), dialog.getCurveType(), dialog.getNextSegmentCurveColor()));
+		        		 props.add(new PlotProperties(dialog.getNextXColumnName(), dialog.getNextYColumnName(), dialog.getNextCurveColor(), dialog.getCurveType(), dialog.getNextSegmentCurveColor()));
 		        	 }
 		        	 moleculePanel.addCurvePlot(props);
 	        	 }
@@ -427,7 +430,9 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 	        		 
 	        	    //First we ask how many plots will be added
 		        	GenericDialog dialog = new GenericDialog("Multiple Plots");
-		        	String[] columnNames = archive.get(0).getDataTable().getColumnHeadings();
+		        	
+		        	ArrayList<String> columnHeadings = moleculeArchiveService.getColumnNames();
+		        	String[] columnNames = columnHeadings.toArray(new String[columnHeadings.size()]);
 		     		dialog.addChoice("x_column", columnNames, "Time (s)");
 		     		dialog.addNumericField("Number_of_plots", 2, 0);
 		     		dialog.showDialog();
@@ -1023,7 +1028,7 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 		lockArchive = false;
 	}
 	
-	public MoleculeArchive getArchive() {
+	public MoleculeArchive<?,?,?> getArchive() {
 		return archive;
 	}
 	

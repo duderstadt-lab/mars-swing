@@ -278,14 +278,17 @@ public class MarsTableSwingFrame implements ActionListener, MarsTableWindow {
 				e1.printStackTrace();
 			}
 		} else if (e.getSource() == singleCurveMenuItem) {
-			PlotDialog dialog = new PlotDialog("Curve Plot", results, 1, true);
+			ArrayList<String> columnHeadings = marsTableService.getColumnNames();
+        	String[] columnNames = columnHeadings.toArray(new String[columnHeadings.size()]);
+			
+			PlotDialog dialog = new PlotDialog("Curve Plot", columnNames, 1, true);
 			dialog.showDialog();
         	if (dialog.wasCanceled())
      			return;
 
         	dialog.update(dialog);
         	
-    		PlotData curve1 = new PlotData(results, dialog.getXColumnName(), dialog.getNextYColumnName(), dialog.getNextCurveColor(), dialog.getGroupColumn(), dialog.getCurveType(), results.getName());
+    		PlotData curve1 = new PlotData(results, dialog.getNextXColumnName(), dialog.getNextYColumnName(), dialog.getNextCurveColor(), dialog.getGroupColumn(), dialog.getCurveType(), results.getName());
     		
     		ArrayList<PlotData> plot_data = new ArrayList<PlotData>();
     		plot_data.add(curve1);

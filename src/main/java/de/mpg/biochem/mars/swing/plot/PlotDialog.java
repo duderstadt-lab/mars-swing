@@ -46,15 +46,16 @@ import de.mpg.biochem.mars.table.MarsTable;
 public class PlotDialog extends GenericDialog implements DialogListener {
 	private static final long serialVersionUID = 1L;
 
-	private String xColumn;
 	private String groupColumn;
 	
 	//Can be one for single curve mode and more for multicurve mode...
+	private String[] xColumns;
 	private String[] yColumns;
 	private Color[] color_choices;
 	private Color[] segment_color_choices;
 	
 	//Indexes for retrieving the values from the arrays above.
+	private int xColumn_index = 0;
 	private int yColumn_index = 0;
 	private int color_choice_index = 0;
 	private int segment_color_choice_index = 0;
@@ -72,27 +73,27 @@ public class PlotDialog extends GenericDialog implements DialogListener {
 	
 	private boolean groupsOption = false;
 	
-	public PlotDialog(String dialogTitle, MarsTable table, int curveNumber, boolean groupsOption) {
+	public PlotDialog(String dialogTitle, String[] columns, int curveNumber, boolean groupsOption) {
 		super(dialogTitle);
 		
 		this.groupsOption = groupsOption;
 		
 		this.curveNumber = curveNumber;
 		
-		String[] columns = table.getColumnHeadings();
 		String[] types = {"line plot", "scatter plot", "bar graph"};
+		xColumns = new String[curveNumber];
 		yColumns = new String[curveNumber];
 		color_choices = new Color[curveNumber];
 		segment_color_choices = new Color[curveNumber];
 		
-		addChoice("x_column", columns, "slice");
-		
 		if (curveNumber == 1) {
+			addChoice("x_column", columns, "slice");
 			addChoice("y_column", columns, "x");
 			addChoice("color", colors, "black");
 			addChoice("segments", SegColors, "red");
 		} else {
 			for (int i=0;i<curveNumber;i++) {
+				addChoice("x" + (i+1) + "_column", columns, "slice");
 				addChoice("y" + (i+1) + "_column", columns, "x");
 				addChoice("y" + (i+1) + "_color", colors, "black");
 				addChoice("y" + (i+1) + "_segments", SegColors, "red");
@@ -114,8 +115,14 @@ public class PlotDialog extends GenericDialog implements DialogListener {
 		update(this);
 	}
 	
-	public String getXColumnName() {
-		return xColumn;
+	public String getNextXColumnName() {
+		String output = xColumns[xColumn_index];
+		if (xColumn_index == xColumns.length - 1) {
+			xColumn_index = 0;
+		} else {
+			xColumn_index++;
+		}
+		return output;
 	}
 	
 	public String getNextYColumnName() {
@@ -184,8 +191,8 @@ public class PlotDialog extends GenericDialog implements DialogListener {
 	}
 	
 	public void update(GenericDialog dialog) {
-		xColumn = dialog.getNextChoice();
 		for (int i=0;i<curveNumber;i++) {
+			xColumns[i] = dialog.getNextChoice();
 			yColumns[i] = dialog.getNextChoice();
 			color_choices[i] = getColorFromName(dialog.getNextChoice());
 			segment_color_choices[i] = getColorFromName(dialog.getNextChoice());
