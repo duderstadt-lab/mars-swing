@@ -532,6 +532,9 @@ public class Plot extends JComponent implements ActionListener {
 				nonNaNrowCount++;
 		}
 		
+		if (nonNaNrowCount == 0)
+			return;
+		
 		double[] plot = new double[nonNaNrowCount * 2];
 		
 		int pos = 0;

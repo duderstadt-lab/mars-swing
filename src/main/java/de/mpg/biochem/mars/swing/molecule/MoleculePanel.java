@@ -115,9 +115,6 @@ public class MoleculePanel extends JPanel implements BoundsChangedListener, Mole
 	private boolean multiPlot = false;
 	private int numberOfPlots = 2;
 	
-	//For videos.
-	private JPanel videoPanel;
-	
 	private JTable ParameterTable;
 	private AbstractTableModel ParameterTableModel;
 	private String[] ParameterList;

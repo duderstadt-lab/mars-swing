@@ -94,8 +94,8 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 	@Parameter
     private MoleculeArchiveService moleculeArchiveService;
 	
-	@Parameter
-	private ObjectService objectService;
+	//@Parameter
+	//private ObjectService objectService;
 	
     @Parameter
     private UIService uiService;
@@ -119,6 +119,8 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 	private ImageMetadataPanel imageMetadataPanel;
 	
 	private MoleculePanel moleculePanel;
+
+	private MarsBdvFrame bdvFrame;
 	
 	private HashMap<String, String> tagHotKeyList;
 	
@@ -150,6 +152,8 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 	private JMenuItem updateMenuItem = new JMenuItem("Update Window");
 	private JMenuItem rebuildIndexesMenuItem = new JMenuItem("Rebuild Indexes");
 	
+	private JMenuItem showVideo = new JMenuItem("Show Video");
+	
 	//static so that window locations are offset...
 	static int pos_x = 100;
 	static int pos_y = 130;
@@ -172,7 +176,6 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 		this.archive = archive;
 		archive.setWindow(this);
 		this.moleculeArchiveService = moleculeArchiveService;
-		this.moleculeArchiveService.getContext().inject(this);
 		this.prefService = 	moleculeArchiveService.getPrefService();
 		this.uiService = moleculeArchiveService.getUIService();
 
@@ -211,7 +214,7 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 		propertiesTabs = archiveProperties();
 		tabbedPane.addTab("Properties", propertiesTabs);
 		
-		imageMetadataPanel = new ImageMetadataPanel(archive);
+		imageMetadataPanel = new ImageMetadataPanel(archive, uiService);
 		tabbedPane.addTab("ImageMetadata", imageMetadataPanel);
 		
 		moleculePanel = new MoleculePanel(archive);
@@ -432,6 +435,7 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 		        	GenericDialog dialog = new GenericDialog("Multiple Plots");
 		        	
 		        	ArrayList<String> columnHeadings = moleculeArchiveService.getColumnNames();
+		        	
 		        	String[] columnNames = columnHeadings.toArray(new String[columnHeadings.size()]);
 		     		dialog.addChoice("x_column", columnNames, "Time (s)");
 		     		dialog.addNumericField("Number_of_plots", 2, 0);
@@ -725,6 +729,35 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 						roi.setName(mol.getUID());
 						roiManager.addRoi(roi);
 	        		 }
+	        	 }
+	          }
+	       });
+		
+		toolsMenu.add(showVideo);
+		showVideo.addActionListener(new ActionListener() {
+	         public void actionPerformed(ActionEvent e) {
+	        	 if (!lockArchive) {
+	        		 
+	        		double scale = 1;
+	     			 
+	     			GenericDialog dialog = new GenericDialog("Mars Bdv view");
+	     			dialog.addStringField("x_parameter", "roi_x");
+	     			dialog.addStringField("y_parameter", "roi_y");
+	          		dialog.addNumericField("Scale", scale, 0);
+	          		dialog.showDialog();
+	          		
+	          		if (dialog.wasCanceled())
+	          			return;
+	          		
+	          		String xParameter = dialog.getNextChoice();
+	          		String yParameter = dialog.getNextChoice();
+	          		scale = dialog.getNextNumber(); 
+	        		 
+	        		// if (bdvFrame == null) {
+	        			 bdvFrame = new MarsBdvFrame(archive, xParameter, yParameter, scale);
+	        		 //}
+	        		 
+	        		 bdvFrame.setMolecule(moleculePanel.getMolecule());
 	        	 }
 	          }
 	       });

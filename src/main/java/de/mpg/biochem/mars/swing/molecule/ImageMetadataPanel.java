@@ -39,6 +39,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -63,8 +64,11 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
 
 import org.apache.commons.lang3.StringUtils;
+import org.scijava.plugin.Parameter;
 import org.scijava.table.DoubleColumn;
 import org.scijava.table.GenericColumn;
+import org.scijava.ui.UIService;
+import org.scijava.widget.FileWidget;
 
 import de.mpg.biochem.mars.swing.molecule.MoleculePanel.DecimalFormatRenderer;
 import de.mpg.biochem.mars.table.*;
@@ -80,9 +84,14 @@ public class ImageMetadataPanel extends JPanel {
 	
 	private int imageMetadataCount;
 	
+	@Parameter
+	private UIService uiService;
+	
 	//Log Tab Components
 	private JScrollPane logTab;
 	private JTextArea log;
+	
+	private JPanel bdvTab;
 	
 	private JTabbedPane metaDataTabs;
 	
@@ -100,6 +109,10 @@ public class ImageMetadataPanel extends JPanel {
 	private AbstractTableModel ParameterTableModel;
 	private String[] ParameterList;
 	
+	private JTable BdvViewTable;
+	private AbstractTableModel BdvViewTableModel;
+	private String[] BdvViewList;
+	
 	private JTable TagTable;
 	private AbstractTableModel TagTableModel;
 	private String[] TagList;
@@ -108,8 +121,9 @@ public class ImageMetadataPanel extends JPanel {
 	
 	private SdmmImageMetadata DummyImageMetadata = new SdmmImageMetadata("unknown", new MarsTable());
 	
-	public ImageMetadataPanel(MoleculeArchive<Molecule, MarsImageMetadata, MoleculeArchiveProperties> archive) {
+	public ImageMetadataPanel(MoleculeArchive<Molecule, MarsImageMetadata, MoleculeArchiveProperties> archive, UIService uiService) {
 		this.archive = archive;
+		this.uiService = uiService;
 		
 		if (archive.getNumberOfImageMetadataRecords() > 0) {
 			this.imageMetadata = archive.getImageMetadata(0);
@@ -230,6 +244,7 @@ public class ImageMetadataPanel extends JPanel {
 		metaDataTabs = new JTabbedPane();
 		buildMetadataTabs();
 		
+		updateBdvViewList();
 		updateParameterList();
 		updateTagList();
 		
@@ -293,6 +308,127 @@ public class ImageMetadataPanel extends JPanel {
 		
 		logTab = makeLogTab();
 		metaDataTabs.addTab("Log", logTab);	
+		
+		bdvTab = makeBdvTab();
+		metaDataTabs.addTab("Bdv Views", bdvTab);	
+	}
+	
+	public void updateBdvViewList() {
+		BdvViewList = new String[imageMetadata.getBdvViewList().size()];
+		imageMetadata.getBdvViewList().toArray(BdvViewList);
+	}
+	
+	public JPanel makeBdvTab() {
+		updateBdvViewList();
+		
+		BdvViewTableModel = new AbstractTableModel() {
+			private static final long serialVersionUID = 1L;
+	
+			@Override
+			public Object getValueAt(int rowIndex, int columnIndex) {
+				if (columnIndex == 0) {
+					return BdvViewList[rowIndex];
+				}
+				
+				return imageMetadata.getBdvView(BdvViewList[rowIndex]);
+			}
+			
+			@Override
+			public String getColumnName(int columnIndex) {
+				if (columnIndex == 0)
+					return "View Name";
+				else
+					return "file path (xml)";
+			}
+	
+			@Override
+			public int getRowCount() {
+				return BdvViewList.length;
+			}
+			
+			@Override
+			public int getColumnCount() {
+				return 2;
+			}
+		};
+		
+		JPanel BdvViewPanel = new JPanel();
+		BdvViewPanel.setLayout(new BorderLayout());
+		
+		BdvViewTable = new JTable(BdvViewTableModel);
+		BdvViewTable.setAutoCreateColumnsFromModel(true);
+		BdvViewTable.setRowSelectionAllowed(true);
+		BdvViewTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		
+		resizeColumnWidth(BdvViewTable);
+		
+		BdvViewTable.getColumnModel().getColumn(0).setMinWidth(125);
+		
+		JScrollPane BdvViewScrollPane = new JScrollPane(BdvViewTable);
+		
+		Dimension dim2 = new Dimension(10000, 10000);
+		
+		BdvViewScrollPane.setMaximumSize(dim2);
+		BdvViewScrollPane.setPreferredSize(dim2);
+		
+		BdvViewPanel.add(BdvViewScrollPane, BorderLayout.CENTER);
+		
+		JPanel southPanel = new JPanel();
+		southPanel.setLayout(new GridBagLayout());
+		GridBagConstraints BdvViewPanelGBC = new GridBagConstraints();
+		BdvViewPanelGBC.anchor = GridBagConstraints.NORTH;
+		
+		//Top, left, bottom, right
+		BdvViewPanelGBC.insets = new Insets(5, 0, 5, 0);
+		
+		BdvViewPanelGBC.weightx = 1;
+		BdvViewPanelGBC.weighty = 1;
+		
+		BdvViewPanelGBC.gridx = 0;
+		BdvViewPanelGBC.gridy = 0;
+		
+		JPanel AddPanel = new JPanel();
+		AddPanel.setLayout(new BorderLayout());
+		JTextField newView = new JTextField(12);
+		Dimension dimParm = new Dimension(200, 20);
+		newView.setMinimumSize(dimParm);
+		AddPanel.add(newView, BorderLayout.CENTER);
+		JButton Add = new JButton("Add");
+		Add.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (!newView.getText().equals("") && archive.getNumberOfImageMetadataRecords() != 0) {
+					imageMetadataRecordChanged = true;
+					File file = uiService.chooseFile(archive.getFile(), FileWidget.OPEN_STYLE);
+					imageMetadata.putBdvView(newView.getText().trim(), file.getAbsolutePath());
+					updateBdvViewList();
+					BdvViewTableModel.fireTableDataChanged();
+				}
+			}
+		});
+		AddPanel.add(Add, BorderLayout.EAST);
+		
+		southPanel.add(AddPanel, BdvViewPanelGBC);
+		
+		JButton Remove = new JButton("Remove");
+		Remove.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (BdvViewTable.getSelectedRow() != -1 && archive.getNumberOfImageMetadataRecords() != 0) {
+					imageMetadataRecordChanged = true;
+					String viewName = (String)BdvViewTable.getValueAt(BdvViewTable.getSelectedRow(), 0);
+					imageMetadata.removeBdvView(viewName);
+					updateBdvViewList();
+					BdvViewTableModel.fireTableDataChanged();
+				}
+			}
+		});
+		
+		BdvViewPanelGBC.gridy += 1;
+		BdvViewPanelGBC.anchor = GridBagConstraints.NORTHEAST;
+		southPanel.add(Remove, BdvViewPanelGBC);
+		
+		BdvViewPanel.add(southPanel, BorderLayout.SOUTH);
+		
+		return BdvViewPanel;
 	}
 	
 	public JScrollPane buildMetadataProperties() {
@@ -781,6 +917,7 @@ public class ImageMetadataPanel extends JPanel {
 			imageMetadataIndexTableModel.fireTableRowsUpdated(0, imageMetadataCount - 1);
 		}
 		
+		updateBdvViewList();
 		updateParameterList();
 		updateTagList();
 		
@@ -800,6 +937,11 @@ public class ImageMetadataPanel extends JPanel {
 		ParameterTableModel.fireTableDataChanged();
 		for (int i = 0; i < ParameterTable.getColumnCount(); i++)
 			ParameterTable.getColumnModel().getColumn(i).sizeWidthToFit();
+		
+		//Update Parameter list
+		BdvViewTableModel.fireTableDataChanged();
+		for (int i = 0; i < BdvViewTable.getColumnCount(); i++)
+			BdvViewTable.getColumnModel().getColumn(i).sizeWidthToFit();
 		
 		//Update TagList
 		TagTableModel.fireTableDataChanged();

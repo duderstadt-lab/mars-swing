@@ -13,7 +13,7 @@
 
 	<groupId>de.mpg.biochem</groupId>
 	<artifactId>mars-swing</artifactId>
-	<version>1.0.0-SNAPSHOT-beta44</version>
+	<version>1.0.0-SNAPSHOT-beta61</version>
 
 	<name>mars-swing</name>
 	<url>http://biochem.mpg.de/duderstadt/</url>
@@ -152,6 +152,18 @@
 		<dependency>
 			<groupId>org.scijava</groupId>
 			<artifactId>scijava-ui-swing</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>sc.fiji</groupId>
+			<artifactId>bigdataviewer-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>sc.fiji</groupId>
+			<artifactId>bigdataviewer-vistools</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>sc.fiji</groupId>
+			<artifactId>bigdataviewer_fiji</artifactId>
 		</dependency>
 	</dependencies>
 	<description>Swing GUI for analysis of single-molecule TIRF and FMT data in the Structure and Dynamics of Molecular Machines research group</description>
