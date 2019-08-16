@@ -737,27 +737,22 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 		showVideo.addActionListener(new ActionListener() {
 	         public void actionPerformed(ActionEvent e) {
 	        	 if (!lockArchive) {
-	        		 
-	        		double scale = 1;
-	     			 
 	     			GenericDialog dialog = new GenericDialog("Mars Bdv view");
 	     			dialog.addStringField("x_parameter", "roi_x");
 	     			dialog.addStringField("y_parameter", "roi_y");
-	          		dialog.addNumericField("Scale", scale, 0);
 	          		dialog.showDialog();
 	          		
 	          		if (dialog.wasCanceled())
 	          			return;
 	          		
-	          		String xParameter = dialog.getNextChoice();
-	          		String yParameter = dialog.getNextChoice();
-	          		scale = dialog.getNextNumber(); 
+	          		String xParameter = dialog.getNextString();
+	          		String yParameter = dialog.getNextString();
 	        		 
 	        		// if (bdvFrame == null) {
-	        			 bdvFrame = new MarsBdvFrame(archive, xParameter, yParameter, scale);
+	        			 bdvFrame = new MarsBdvFrame(archive, moleculePanel, xParameter, yParameter);
 	        		 //}
 	        		 
-	        		 bdvFrame.setMolecule(moleculePanel.getMolecule());
+	        		 //bdvFrame.setMolecule(moleculePanel.getMolecule());
 	        	 }
 	          }
 	       });

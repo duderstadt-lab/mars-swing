@@ -109,9 +109,9 @@ public class ImageMetadataPanel extends JPanel {
 	private AbstractTableModel ParameterTableModel;
 	private String[] ParameterList;
 	
-	private JTable BdvViewTable;
-	private AbstractTableModel BdvViewTableModel;
-	private String[] BdvViewList;
+	private JTable BdvSourceTable;
+	private AbstractTableModel BdvSourceTableModel;
+	private String[] BdvSourceList;
 	
 	private JTable TagTable;
 	private AbstractTableModel TagTableModel;
@@ -130,7 +130,7 @@ public class ImageMetadataPanel extends JPanel {
 		} else {
 			imageMetadata = DummyImageMetadata;
 		}
-		
+
 		imageMetadataCount = archive.getNumberOfImageMetadataRecords();
 		buildPanel();
 	}
@@ -244,7 +244,7 @@ public class ImageMetadataPanel extends JPanel {
 		metaDataTabs = new JTabbedPane();
 		buildMetadataTabs();
 		
-		updateBdvViewList();
+		updateBdvSourceList();
 		updateParameterList();
 		updateTagList();
 		
@@ -313,122 +313,212 @@ public class ImageMetadataPanel extends JPanel {
 		metaDataTabs.addTab("Bdv Views", bdvTab);	
 	}
 	
-	public void updateBdvViewList() {
-		BdvViewList = new String[imageMetadata.getBdvViewList().size()];
-		imageMetadata.getBdvViewList().toArray(BdvViewList);
+	public void updateBdvSourceList() {
+		BdvSourceList = new String[imageMetadata.getBdvSources().size()];
+		imageMetadata.getBdvSourceNames().toArray(BdvSourceList);
 	}
 	
 	public JPanel makeBdvTab() {
-		updateBdvViewList();
+		updateBdvSourceList();
 		
-		BdvViewTableModel = new AbstractTableModel() {
+		BdvSourceTableModel = new AbstractTableModel() {
 			private static final long serialVersionUID = 1L;
 	
 			@Override
 			public Object getValueAt(int rowIndex, int columnIndex) {
-				if (columnIndex == 0) {
-					return BdvViewList[rowIndex];
+				BdvSource source = imageMetadata.getBdvSource(BdvSourceList[rowIndex]);
+				switch(columnIndex) {
+				  case 0:
+					return BdvSourceList[rowIndex];
+				  case 1:
+					return source.getAffineTransform3D().get(0, 0);
+				  case 2:
+					return source.getAffineTransform3D().get(0, 1);
+				  case 3:
+					return source.getAffineTransform3D().get(0, 3);
+				  case 4:
+					return source.getAffineTransform3D().get(1, 0);
+				  case 5:
+					return source.getAffineTransform3D().get(1, 1);
+				  case 6:
+					return source.getAffineTransform3D().get(1, 3);
+				  case 7:
+					return source.getXDriftColumn();
+				  case 8:
+					return source.getYDriftColumn();
+				  case 9:
+					return source.getPathToXml();
 				}
-				
-				return imageMetadata.getBdvView(BdvViewList[rowIndex]);
+
+				return "";
 			}
 			
 			@Override
 			public String getColumnName(int columnIndex) {
-				if (columnIndex == 0)
-					return "View Name";
-				else
+				switch(columnIndex) {
+				  case 0:
+					return "Name";
+				  case 1:
+					return "m01";
+				  case 2:
+					return "m02";
+				  case 3:
+					return "m03";
+				  case 4:
+					return "m10";
+				  case 5:
+					return "m11";
+				  case 6:
+					return "m12";
+				  case 7:
+					return "xDriftColumn";
+				  case 8:
+					return "yDriftColumn";
+				  case 9:
 					return "file path (xml)";
+				}
+				
+				return "";
+			}
+			
+			@Override
+			public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+				BdvSource source = imageMetadata.getBdvSource(BdvSourceList[rowIndex]);
+				switch(columnIndex) {
+				  case 0:
+				    return;
+				  case 1:
+					source.getAffineTransform3D().set(Double.valueOf((String)aValue), 0, 0);
+					return;
+				  case 2:
+					source.getAffineTransform3D().set(Double.valueOf((String)aValue), 0, 1);
+					return;
+				  case 3:
+					source.getAffineTransform3D().set(Double.valueOf((String)aValue), 0, 3);
+					return;
+				  case 4:
+					source.getAffineTransform3D().set(Double.valueOf((String)aValue), 1, 0);
+					return;
+				  case 5:
+					source.getAffineTransform3D().set(Double.valueOf((String)aValue), 1, 1);
+					return;
+				  case 6:
+					source.getAffineTransform3D().set(Double.valueOf((String)aValue), 1, 3);
+					return;
+				  case 7:
+					source.setXDriftColumn((String)aValue);
+					return;
+				  case 8:
+					source.setYDriftColumn((String)aValue);
+					return;
+				  case 9:
+					source.setPathToXml((String)aValue);
+					return;
+				}
 			}
 	
 			@Override
 			public int getRowCount() {
-				return BdvViewList.length;
+				return BdvSourceList.length;
 			}
 			
 			@Override
 			public int getColumnCount() {
-				return 2;
+				return 10;
+			}
+			
+			@Override
+			public boolean isCellEditable(int rowIndex, int columnIndex)  {
+				if (columnIndex == 0)
+					return false;
+				else
+					return true;
 			}
 		};
 		
-		JPanel BdvViewPanel = new JPanel();
-		BdvViewPanel.setLayout(new BorderLayout());
+		JPanel BdvSourcePanel = new JPanel();
+		BdvSourcePanel.setLayout(new BorderLayout());
 		
-		BdvViewTable = new JTable(BdvViewTableModel);
-		BdvViewTable.setAutoCreateColumnsFromModel(true);
-		BdvViewTable.setRowSelectionAllowed(true);
-		BdvViewTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		BdvSourceTable = new JTable(BdvSourceTableModel);
+		BdvSourceTable.setAutoCreateColumnsFromModel(true);
+		BdvSourceTable.setRowSelectionAllowed(true);
+		BdvSourceTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		resizeColumnWidth(BdvSourceTable);
+		BdvSourceTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		
-		resizeColumnWidth(BdvViewTable);
+		for (int i = 0; i < BdvSourceTable.getColumnCount(); i++) {
+			BdvSourceTable.getColumnModel().getColumn(i).setPreferredWidth(75);
+		}
 		
-		BdvViewTable.getColumnModel().getColumn(0).setMinWidth(125);
+		JScrollPane scrollPane = new JScrollPane(BdvSourceTable);
 		
-		JScrollPane BdvViewScrollPane = new JScrollPane(BdvViewTable);
+		//Dimension dim = new Dimension(DataTable.getColumnCount()*75 + 5, 500);
+		Dimension dim = new Dimension(500, 500);
 		
-		Dimension dim2 = new Dimension(10000, 10000);
+		scrollPane.setMinimumSize(dim);
+		scrollPane.setMaximumSize(dim);
+		scrollPane.setPreferredSize(dim);
 		
-		BdvViewScrollPane.setMaximumSize(dim2);
-		BdvViewScrollPane.setPreferredSize(dim2);
-		
-		BdvViewPanel.add(BdvViewScrollPane, BorderLayout.CENTER);
+		BdvSourcePanel.add(scrollPane, BorderLayout.CENTER);
 		
 		JPanel southPanel = new JPanel();
 		southPanel.setLayout(new GridBagLayout());
-		GridBagConstraints BdvViewPanelGBC = new GridBagConstraints();
-		BdvViewPanelGBC.anchor = GridBagConstraints.NORTH;
+		GridBagConstraints BdvSourcePanelGBC = new GridBagConstraints();
+		BdvSourcePanelGBC.anchor = GridBagConstraints.NORTH;
 		
 		//Top, left, bottom, right
-		BdvViewPanelGBC.insets = new Insets(5, 0, 5, 0);
+		BdvSourcePanelGBC.insets = new Insets(5, 0, 5, 0);
 		
-		BdvViewPanelGBC.weightx = 1;
-		BdvViewPanelGBC.weighty = 1;
+		BdvSourcePanelGBC.weightx = 1;
+		BdvSourcePanelGBC.weighty = 1;
 		
-		BdvViewPanelGBC.gridx = 0;
-		BdvViewPanelGBC.gridy = 0;
+		BdvSourcePanelGBC.gridx = 0;
+		BdvSourcePanelGBC.gridy = 0;
 		
 		JPanel AddPanel = new JPanel();
 		AddPanel.setLayout(new BorderLayout());
-		JTextField newView = new JTextField(12);
+		JTextField newSource = new JTextField(12);
 		Dimension dimParm = new Dimension(200, 20);
-		newView.setMinimumSize(dimParm);
-		AddPanel.add(newView, BorderLayout.CENTER);
+		newSource.setMinimumSize(dimParm);
+		AddPanel.add(newSource, BorderLayout.CENTER);
 		JButton Add = new JButton("Add");
 		Add.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if (!newView.getText().equals("") && archive.getNumberOfImageMetadataRecords() != 0) {
+				if (!newSource.getText().equals("") && archive.getNumberOfImageMetadataRecords() != 0) {
 					imageMetadataRecordChanged = true;
 					File file = uiService.chooseFile(archive.getFile(), FileWidget.OPEN_STYLE);
-					imageMetadata.putBdvView(newView.getText().trim(), file.getAbsolutePath());
-					updateBdvViewList();
-					BdvViewTableModel.fireTableDataChanged();
+					BdvSource source = new BdvSource(newSource.getText().trim());
+					source.setPathToXml(file.getAbsolutePath());
+					imageMetadata.putBdvSource(source);
+					updateBdvSourceList();
+					BdvSourceTableModel.fireTableDataChanged();
 				}
 			}
 		});
 		AddPanel.add(Add, BorderLayout.EAST);
 		
-		southPanel.add(AddPanel, BdvViewPanelGBC);
+		southPanel.add(AddPanel, BdvSourcePanelGBC);
 		
 		JButton Remove = new JButton("Remove");
 		Remove.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if (BdvViewTable.getSelectedRow() != -1 && archive.getNumberOfImageMetadataRecords() != 0) {
+				if (BdvSourceTable.getSelectedRow() != -1 && archive.getNumberOfImageMetadataRecords() != 0) {
 					imageMetadataRecordChanged = true;
-					String viewName = (String)BdvViewTable.getValueAt(BdvViewTable.getSelectedRow(), 0);
-					imageMetadata.removeBdvView(viewName);
-					updateBdvViewList();
-					BdvViewTableModel.fireTableDataChanged();
+					String SourceName = (String)BdvSourceTable.getValueAt(BdvSourceTable.getSelectedRow(), 0);
+					imageMetadata.removeBdvSource(SourceName);
+					updateBdvSourceList();
+					BdvSourceTableModel.fireTableDataChanged();
 				}
 			}
 		});
 		
-		BdvViewPanelGBC.gridy += 1;
-		BdvViewPanelGBC.anchor = GridBagConstraints.NORTHEAST;
-		southPanel.add(Remove, BdvViewPanelGBC);
+		BdvSourcePanelGBC.gridy += 1;
+		BdvSourcePanelGBC.anchor = GridBagConstraints.NORTHEAST;
+		southPanel.add(Remove, BdvSourcePanelGBC);
 		
-		BdvViewPanel.add(southPanel, BorderLayout.SOUTH);
+		BdvSourcePanel.add(southPanel, BorderLayout.SOUTH);
 		
-		return BdvViewPanel;
+		return BdvSourcePanel;
 	}
 	
 	public JScrollPane buildMetadataProperties() {
@@ -917,7 +1007,7 @@ public class ImageMetadataPanel extends JPanel {
 			imageMetadataIndexTableModel.fireTableRowsUpdated(0, imageMetadataCount - 1);
 		}
 		
-		updateBdvViewList();
+		updateBdvSourceList();
 		updateParameterList();
 		updateTagList();
 		
@@ -939,9 +1029,9 @@ public class ImageMetadataPanel extends JPanel {
 			ParameterTable.getColumnModel().getColumn(i).sizeWidthToFit();
 		
 		//Update Parameter list
-		BdvViewTableModel.fireTableDataChanged();
-		for (int i = 0; i < BdvViewTable.getColumnCount(); i++)
-			BdvViewTable.getColumnModel().getColumn(i).sizeWidthToFit();
+		BdvSourceTableModel.fireTableDataChanged();
+		for (int i = 0; i < BdvSourceTable.getColumnCount(); i++)
+			BdvSourceTable.getColumnModel().getColumn(i).sizeWidthToFit();
 		
 		//Update TagList
 		TagTableModel.fireTableDataChanged();
