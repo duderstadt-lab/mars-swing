@@ -2,12 +2,17 @@ package de.mpg.biochem.mars.swing.molecule;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -17,10 +22,13 @@ import javax.swing.WindowConstants;
 import bdv.spimdata.SpimDataMinimal;
 import bdv.spimdata.XmlIoSpimDataMinimal;
 import bdv.tools.InitializeViewerState;
+import bdv.tools.brightness.ConverterSetup;
+import bdv.tools.brightness.MinMaxGroup;
 import bdv.util.Affine3DHelpers;
 import bdv.util.Bdv;
 import bdv.util.BdvFunctions;
 import bdv.util.BdvHandlePanel;
+import bdv.util.BdvStackSource;
 import bdv.viewer.Source;
 import bdv.viewer.ViewerPanel;
 import bdv.viewer.state.ViewerState;
@@ -36,13 +44,15 @@ public class MarsBdvFrame {
 	
 	private final JFrame frame;
 	
-	JTextField scaleField;
+	private JTextField scaleField;
+	private JCheckBox autoUpdate;
 	
-	//spimdata map instead?
+	private HashMap<String, ArrayList<SpimDataMinimal>> bdvSources;
 	
 	private String metaUID;
 	
 	private BdvHandlePanel bdv;
+	private List<BdvStackSource<?>> BDVs;
 	
 	private String xParameter, yParameter;
 	private MoleculeArchive<?,?,?> archive;
@@ -56,7 +66,7 @@ public class MarsBdvFrame {
 		this.yParameter = yParameter;
 		this.molPane = molPane;
 		
-		metaUID = "";
+		bdvSources = new HashMap<String, ArrayList<SpimDataMinimal>>();
 		
 		System.setProperty( "apple.laf.useScreenMenuBar", "true" );
 		
@@ -67,7 +77,7 @@ public class MarsBdvFrame {
 		JButton reload = new JButton("Reload");
 		reload.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				setMolecule(molPane.getMolecule());
+				load();
 			}
 		});
 		buttonPane.add(reload);
@@ -84,44 +94,98 @@ public class MarsBdvFrame {
 		goTo.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				Molecule molecule = molPane.getMolecule();
-				if (molecule.hasParameter(xParameter) && molecule.hasParameter(yParameter)) 
-					goTo(molecule.getParameter(xParameter), molecule.getParameter(yParameter));
+				if (molecule != null && autoUpdate.isSelected()) {			
+					MarsImageMetadata meta = archive.getImageMetadata(molecule.getImageMetadataUID());
+					if (!metaUID.equals(meta.getUID())) {
+						metaUID = meta.getUID();
+						createView(meta);
+					}
+					if (molecule.hasParameter(xParameter) && molecule.hasParameter(yParameter))
+						goTo(molecule.getParameter(xParameter), molecule.getParameter(yParameter));
+				 }
 			}
 		});
 		buttonPane.add(goTo);
 		
-		buttonPane.add(new JLabel("zoom "));
+		JPanel optionsPane = new JPanel();
+		
+		autoUpdate = new JCheckBox("Auto update", true);
+		
+		optionsPane.add(new JLabel("Zoom "));
 		
 		scaleField = new JTextField(6);
 		scaleField.setText("10");
 		Dimension dimScaleField = new Dimension(100, 20);
 		scaleField.setMinimumSize(dimScaleField);
-		buttonPane.add(scaleField);
+		
+		optionsPane.add(scaleField);
+		optionsPane.add(autoUpdate);
 		
 		bdv = new BdvHandlePanel( frame, Bdv.options().is2D() );
 		frame.add( bdv.getViewerPanel(), BorderLayout.CENTER );
 		
-		frame.add(buttonPane, BorderLayout.SOUTH);
+		JPanel panel = new JPanel(new GridLayout(2, 1));
+		
+		panel.add(buttonPane);
+		panel.add(optionsPane);
+		
+		frame.add(panel, BorderLayout.SOUTH);
 		frame.setPreferredSize( new Dimension( 800, 600 ) );
 		frame.pack();
 		frame.setDefaultCloseOperation( WindowConstants.DISPOSE_ON_CLOSE );
-		frame.setVisible( true );
 		
-		setMolecule(molPane.getMolecule());
+		load();
+	}
+	
+	public void load() {
+		MarsImageMetadata meta = archive.getImageMetadata(molPane.getMolecule().getImageMetadataUID());
+		metaUID = meta.getUID();
+		createView(meta);
+		if (molPane.getMolecule().hasParameter(xParameter) && molPane.getMolecule().hasParameter(yParameter)) 
+			goTo(molPane.getMolecule().getParameter(xParameter), molPane.getMolecule().getParameter(yParameter));
 	}
 	
 	public void setMolecule(Molecule molecule) {
-		if (molecule != null) {			
+		if (molecule != null && autoUpdate.isSelected()) {			
 			MarsImageMetadata meta = archive.getImageMetadata(molecule.getImageMetadataUID());
-			if (!metaUID.equals(meta.getUID()))
+			if (!metaUID.equals(meta.getUID())) {
+				metaUID = meta.getUID();
 				createView(meta);
-			if (molecule.hasParameter(xParameter) && molecule.hasParameter(yParameter)) 
+			}
+			if (molecule.hasParameter(xParameter) && molecule.hasParameter(yParameter))
 				goTo(molecule.getParameter(xParameter), molecule.getParameter(yParameter));
 		 }
 	}
 	
 	private void createView(MarsImageMetadata meta) {
-		bdv.getViewerPanel().removeAllSources();
+		if (bdv != null) {
+			frame.setVisible( false );
+			frame.remove(bdv.getViewerPanel());
+		}
+		bdv = new BdvHandlePanel( frame, Bdv.options().is2D() );		
+		frame.add( bdv.getViewerPanel(), BorderLayout.CENTER );
+		frame.setVisible( true );
+		
+		//bdv.getViewerPanel().removeAllSources();
+		/*
+		if (BDVs != null) {
+			System.out.println("BDVs " + BDVs.size());
+			for (BdvStackSource<?> b : BDVs)
+				b.removeFromBdv();
+		}
+		*/
+		
+		if (!bdvSources.containsKey(meta.getUID()))
+			bdvSources.put(meta.getUID(), loadNewSources(meta));
+		
+		for (SpimDataMinimal spimData : bdvSources.get(meta.getUID()))
+			BDVs = BdvFunctions.show( spimData, Bdv.options().addTo( bdv ) );
+		
+		InitializeViewerState.initBrightness( 0.001, 0.999, bdv.getViewerPanel(), bdv.getSetupAssignments() );
+	}
+	
+	private ArrayList<SpimDataMinimal> loadNewSources(MarsImageMetadata meta) {
+		ArrayList<SpimDataMinimal> spimArray = new ArrayList<SpimDataMinimal>();
 		for (BdvSource source : meta.getBdvSources()) {
 			SpimDataMinimal spimData;
 			try {
@@ -145,12 +209,13 @@ public class MarsBdvFrame {
 						registrations.get(id).getModel().set(source.getAffineTransform3D());
 				}
 				
-				BdvFunctions.show( spimData, Bdv.options().addTo( bdv ) );
+				spimArray.add(spimData);
 			} catch (SpimDataException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
+		
+		return spimArray;
 	}
 	
 	public void updateSetting(String xParameter, String yParameter) {
@@ -200,12 +265,9 @@ public class MarsBdvFrame {
 	
 	public void resetView() {
 		ViewerPanel viewer = bdv.getBdvHandle().getViewerPanel();
-		
 		Dimension dim = viewer.getDisplay().getSize();
 		viewerTransform = initTransform( (int)dim.getWidth(), (int)dim.getHeight(), false, viewer.getState() );
-		
 		viewer.setCurrentViewerTransform(viewerTransform);
-		InitializeViewerState.initBrightness( 0.001, 0.999, bdv.getViewerPanel(), bdv.getSetupAssignments() );
 	}
 
 	/**

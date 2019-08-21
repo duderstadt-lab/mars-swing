@@ -125,6 +125,8 @@ public class MoleculePanel extends JPanel implements BoundsChangedListener, Mole
 	
 	private JTextArea notes;
 	
+	private MarsBdvFrame bdvFrame;
+	
 	private JLabel recordCount;
 	
 	private Molecule molecule;
@@ -894,6 +896,9 @@ public class MoleculePanel extends JPanel implements BoundsChangedListener, Mole
 		
 		if (selectedTab < dataANDPlot.getTabCount())
 			dataANDPlot.setSelectedIndex(selectedTab);
+		
+		if (bdvFrame != null)
+			bdvFrame.setMolecule(molecule);
 	}
 	
 	private void filterMoleculeIndex() {
@@ -978,6 +983,10 @@ public class MoleculePanel extends JPanel implements BoundsChangedListener, Mole
 	        updateTagList();
 			TagTableModel.fireTableDataChanged();
 	    }
+	}
+	
+	public void setBdvFrame(MarsBdvFrame bdvFrame) {
+		this.bdvFrame = bdvFrame;
 	}
 	
 	@Override
