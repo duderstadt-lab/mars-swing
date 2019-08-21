@@ -762,10 +762,10 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 	         public void actionPerformed(ActionEvent e) {
 	        	 if (!lockArchive) {
 	     			GenericDialog dialog = new GenericDialog("Export BDV to ImageJ");
-	     			dialog.addNumericField("x0", -6, 2);
-	     			dialog.addNumericField("y0", -6, 2);
+	     			dialog.addNumericField("x0", -10, 2);
+	     			dialog.addNumericField("y0", -10, 2);
 	     			dialog.addNumericField("width", 20, 2);
-	     			dialog.addNumericField("height", 80, 2);
+	     			dialog.addNumericField("height", 60, 2);
 	          		dialog.showDialog();
 	          		
 	          		if (dialog.wasCanceled())
@@ -779,10 +779,7 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 	          		ImagePlus ip = bdvFrame.exportView(x0, y0, width, height);
 	          		
 	          		//Now Show it!
-	        		 
-	          		//bdvFrame = new MarsBdvFrame(archive, moleculePanel, xParameter, yParameter);
-	        		 
-	          		//moleculePanel.setBdvFrame(bdvFrame);
+	          		ip.show();
 	        	 }
 	          }
 	       });

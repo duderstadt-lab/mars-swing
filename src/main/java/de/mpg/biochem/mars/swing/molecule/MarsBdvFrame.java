@@ -43,14 +43,20 @@ import net.imglib2.RealRandomAccessible;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.interpolation.randomaccess.NLinearInterpolatorFactory;
 import net.imglib2.realtransform.AffineTransform3D;
+import net.imglib2.realtransform.RealViews;
+import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.ARGBType;
+import net.imglib2.type.numeric.NumericType;
+import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.LinAlgHelpers;
 import net.imglib2.view.Views;
 import mpicbg.spim.data.registration.*;
 import mpicbg.spim.data.sequence.ViewId;
 import net.imglib2.interpolation.randomaccess.NLinearInterpolatorFactory;
+import net.imglib2.realtransform.AffineGet;
+import net.imglib2.realtransform.AffineRandomAccessible;
 
-public class MarsBdvFrame {
+public class MarsBdvFrame< T extends NumericType< T > & NativeType< T > > {
 	
 	private final JFrame frame;
 	
@@ -176,15 +182,6 @@ public class MarsBdvFrame {
 		frame.add( bdv.getViewerPanel(), BorderLayout.CENTER );
 		frame.setVisible( true );
 		
-		//bdv.getViewerPanel().removeAllSources();
-		/*
-		if (BDVs != null) {
-			System.out.println("BDVs " + BDVs.size());
-			for (BdvStackSource<?> b : BDVs)
-				b.removeFromBdv();
-		}
-		*/
-		
 		if (!bdvSources.containsKey(meta.getUID()))
 			bdvSources.put(meta.getUID(), loadNewSources(meta));
 		
@@ -195,98 +192,39 @@ public class MarsBdvFrame {
 	}
 	
 	public ImagePlus exportView(int x0, int y0, int width, int height) {
-		ArrayList< RandomAccessibleInterval< ARGBType > > raiList = new ArrayList< RandomAccessibleInterval< ARGBType > >(); 
-		ARGBType t = null;
-		
 		int numChannels = bdvSources.get(metaUID).size();
 		
-		int TOP_left_x0 = (int)molPane.getMolecule().getParameter(xParameter) - x0;
-		int TOP_left_y0 = (int)molPane.getMolecule().getParameter(yParameter) - y0;
-
+		int TOP_left_x0 = (int)molPane.getMolecule().getParameter(xParameter) + x0;
+		int TOP_left_y0 = (int)molPane.getMolecule().getParameter(yParameter) + y0;
+		
+		ImagePlus[] images = new ImagePlus[numChannels];
+		
 		for ( int i = 0; i < numChannels; i++ ) {
-
-			RealRandomAccessible< ARGBType > convertedSource;
+			ArrayList< RandomAccessibleInterval< T > > raiList = new ArrayList< RandomAccessibleInterval< T > >(); 
+			SpimDataMinimal bdvSource = bdvSources.get(metaUID).get(i);
 			
-			SpimSource spimS = new SpimSource( bdvSources.get(metaUID).get(i), 0, "source " + i );
+			for ( int t = 0; t < bdvSource.getSequenceDescription().getTimePoints().size(); t++ ) {
+				//SpimDataMinimal, setup, name
+				SpimSource<T> spimS = new SpimSource<T>( bdvSource, 0, "source" );
 
-			
-			//t, level, interpolation
-			convertedSource = ( RealRandomAccessible< ARGBType > ) spimS.getInterpolatedSource( 0, 0, Interpolation.NLINEAR );
-			
-			final RealRandomAccessible< ARGBType > raiRaw = ( RealRandomAccessible< ARGBType > )spimS.getInterpolatedSource( 0, 0, Interpolation.NLINEAR );
-
-			// apply the transformations
-			// AffineTransform3D tmpAffine = new AffineTransform3D();
-			//final AffineRandomAccessible< ARGBType, AffineGet > rai = RealViews.affine( 
-			//		raiRaw, pixelRenderToPhysical.inverse() );
-			
-			raiList.add( Views.interval( Views.raster( raiRaw ), new long[] { TOP_left_x0, TOP_left_y0 }, new long[]{ TOP_left_x0 + width, TOP_left_y0 + height } ) );
-		}
-		
-		RandomAccessibleInterval< ARGBType > raiStack = Views.stack( raiList );
-		
-		ImagePlus ip = null;
-		ip = ImageJFunctions.wrap( raiStack, "warped_moving_image" );
-		
-		
-		/*
-		if ( isVirtual )
-		{
-			ip = ImageJFunctions.wrap( raiStack, "warped_moving_image" );
-		}
-		else if( nThreads == 1 )
-		{
-			ip = copyToImageStack( raiStack, raiStack );
-		}
-		else
-		{
-			System.out.println( "render with " + nThreads + " threads.");
-			final ImagePlusImgFactory< ARGBType > factory = new ImagePlusImgFactory< ARGBType >( new ARGBType() );
-
-			if ( outputInterval.numDimensions() == 3 )
-			{
-				// A bit of hacking to make slices the 4th dimension and
-				// channels the 3rd since that's how ImagePlusImgFactory does it
-				final long[] dimensions = new long[ 4 ];
-				dimensions[ 0 ] = outputInterval.dimension( 0 );	// x
-				dimensions[ 1 ] = outputInterval.dimension( 1 );	// y
-				dimensions[ 2 ] = numChannels; 					// c
-				dimensions[ 3 ] = outputInterval.dimension( 2 ); 	// z 
-				FinalInterval destIntervalPerm = new FinalInterval( dimensions );
-				RandomAccessibleInterval< ARGBType > img = copyToImageStack( 
-						raiStack,
-						destIntervalPerm, factory, nThreads );
-				ip = ((ImagePlusImg<ARGBType,?>)img).getImagePlus();
+				//t, level, interpolation
+				final RealRandomAccessible< T > raiRaw = ( RealRandomAccessible< T > )spimS.getInterpolatedSource( t, 0, Interpolation.NLINEAR );
+				
+				//retrieve transform
+				AffineTransform3D affine = bdvSource.getViewRegistrations().getViewRegistration(t, 0).getModel();
+				final AffineRandomAccessible< T, AffineGet > rai = RealViews.affine( raiRaw, affine );
+				
+				RandomAccessibleInterval< T > view = Views.interval( Views.raster( rai ), new long[] { TOP_left_x0, TOP_left_y0, 0 }, new long[]{ TOP_left_x0 + width, TOP_left_y0 + height, 0 } );
+				
+				raiList.add( view );
 			}
-			else if ( outputInterval.numDimensions() == 2 )
-			{
-				final long[] dimensions = new long[ 4 ];
-				dimensions[ 0 ] = outputInterval.dimension( 0 );	// x
-				dimensions[ 1 ] = outputInterval.dimension( 1 );	// y
-				dimensions[ 2 ] = numChannels; 					// c
-				dimensions[ 3 ] = 1; 							// z 
-				FinalInterval destIntervalPerm = new FinalInterval( dimensions );
-				RandomAccessibleInterval< ARGBType > img = copyToImageStack( 
-						Views.addDimension( Views.extendMirrorDouble( raiStack )),
-						destIntervalPerm, factory, nThreads );
-				ip = ((ImagePlusImg<ARGBType,?>)img).getImagePlus();
-			}
+			RandomAccessibleInterval< T > raiStack = Views.stack( raiList );
+			images[i] = ImageJFunctions.wrap( raiStack, "channel " + i );
 		}
-
-		ip.getCalibration().pixelWidth = voxdim.dimension( 0 );
-		ip.getCalibration().pixelHeight = voxdim.dimension( 1 );
-		ip.getCalibration().pixelDepth = voxdim.dimension( 2 );
-		ip.getCalibration().setUnit( voxdim.unit() );
+		//image arrays, boolean keep original.
+		ImagePlus ip = ij.plugin.RGBStackMerge.mergeChannels(images, false);
+		ip.setTitle("molecule " + molPane.getMolecule().getUID());
 		
-		if( offsetTransform != null )
-		{
-			ip.getCalibration().xOrigin = offsetTransform.get( 0, 0 );
-			ip.getCalibration().yOrigin = offsetTransform.get( 1, 1 );
-			ip.getCalibration().zOrigin = offsetTransform.get( 2, 2 );
-		}
-		
-		ip.setTitle( sources.get( movingSourceIndexList[ 0 ]).getSpimSource().getName() );
-		*/
 		return ip;
 	}
 	
