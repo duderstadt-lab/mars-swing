@@ -83,6 +83,7 @@ import de.mpg.biochem.mars.swing.plot.PlotDialog;
 import de.mpg.biochem.mars.swing.plot.PlotProperties;
 import de.mpg.biochem.mars.table.MarsTable;
 import de.mpg.biochem.mars.molecule.*;
+import ij.ImagePlus;
 import ij.WindowManager;
 import ij.gui.GenericDialog;
 import ij.gui.PointRoi;
@@ -153,6 +154,7 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 	private JMenuItem rebuildIndexesMenuItem = new JMenuItem("Rebuild Indexes");
 	
 	private JMenuItem showVideo = new JMenuItem("Show Video");
+	private JMenuItem exportView = new JMenuItem("Export View to ImageJ");
 	
 	//static so that window locations are offset...
 	static int pos_x = 100;
@@ -751,6 +753,36 @@ public class MoleculeArchiveSwingFrame implements MoleculeArchiveWindow {
 	          		bdvFrame = new MarsBdvFrame(archive, moleculePanel, xParameter, yParameter);
 	        		 
 	          		moleculePanel.setBdvFrame(bdvFrame);
+	        	 }
+	          }
+	       });
+		
+		toolsMenu.add(exportView);
+		exportView.addActionListener(new ActionListener() {
+	         public void actionPerformed(ActionEvent e) {
+	        	 if (!lockArchive) {
+	     			GenericDialog dialog = new GenericDialog("Export BDV to ImageJ");
+	     			dialog.addNumericField("x0", -6, 2);
+	     			dialog.addNumericField("y0", -6, 2);
+	     			dialog.addNumericField("width", 20, 2);
+	     			dialog.addNumericField("height", 80, 2);
+	          		dialog.showDialog();
+	          		
+	          		if (dialog.wasCanceled())
+	          			return;
+	          		
+	          		int x0 = (int)dialog.getNextNumber();
+	          		int y0 = (int)dialog.getNextNumber();
+	          		int width = (int)dialog.getNextNumber();
+	          		int height = (int)dialog.getNextNumber();
+	          		
+	          		ImagePlus ip = bdvFrame.exportView(x0, y0, width, height);
+	          		
+	          		//Now Show it!
+	        		 
+	          		//bdvFrame = new MarsBdvFrame(archive, moleculePanel, xParameter, yParameter);
+	        		 
+	          		//moleculePanel.setBdvFrame(bdvFrame);
 	        	 }
 	          }
 	       });

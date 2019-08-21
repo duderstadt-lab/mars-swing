@@ -19,6 +19,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 
+import bdv.SpimSource;
 import bdv.spimdata.SpimDataMinimal;
 import bdv.spimdata.XmlIoSpimDataMinimal;
 import bdv.tools.InitializeViewerState;
@@ -29,16 +30,25 @@ import bdv.util.Bdv;
 import bdv.util.BdvFunctions;
 import bdv.util.BdvHandlePanel;
 import bdv.util.BdvStackSource;
+import bdv.viewer.Interpolation;
 import bdv.viewer.Source;
 import bdv.viewer.ViewerPanel;
 import bdv.viewer.state.ViewerState;
 import mpicbg.spim.data.SpimDataException;
 import de.mpg.biochem.mars.molecule.*;
+import ij.ImagePlus;
 import net.imglib2.Interval;
+import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.RealRandomAccessible;
+import net.imglib2.img.display.imagej.ImageJFunctions;
+import net.imglib2.interpolation.randomaccess.NLinearInterpolatorFactory;
 import net.imglib2.realtransform.AffineTransform3D;
+import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.util.LinAlgHelpers;
+import net.imglib2.view.Views;
 import mpicbg.spim.data.registration.*;
 import mpicbg.spim.data.sequence.ViewId;
+import net.imglib2.interpolation.randomaccess.NLinearInterpolatorFactory;
 
 public class MarsBdvFrame {
 	
@@ -184,9 +194,105 @@ public class MarsBdvFrame {
 		InitializeViewerState.initBrightness( 0.001, 0.999, bdv.getViewerPanel(), bdv.getSetupAssignments() );
 	}
 	
+	public ImagePlus exportView(int x0, int y0, int width, int height) {
+		ArrayList< RandomAccessibleInterval< ARGBType > > raiList = new ArrayList< RandomAccessibleInterval< ARGBType > >(); 
+		ARGBType t = null;
+		
+		int numChannels = bdvSources.get(metaUID).size();
+		
+		int TOP_left_x0 = (int)molPane.getMolecule().getParameter(xParameter) - x0;
+		int TOP_left_y0 = (int)molPane.getMolecule().getParameter(yParameter) - y0;
+
+		for ( int i = 0; i < numChannels; i++ ) {
+
+			RealRandomAccessible< ARGBType > convertedSource;
+			
+			SpimSource spimS = new SpimSource( bdvSources.get(metaUID).get(i), 0, "source " + i );
+
+			
+			//t, level, interpolation
+			convertedSource = ( RealRandomAccessible< ARGBType > ) spimS.getInterpolatedSource( 0, 0, Interpolation.NLINEAR );
+			
+			final RealRandomAccessible< ARGBType > raiRaw = ( RealRandomAccessible< ARGBType > )spimS.getInterpolatedSource( 0, 0, Interpolation.NLINEAR );
+
+			// apply the transformations
+			// AffineTransform3D tmpAffine = new AffineTransform3D();
+			//final AffineRandomAccessible< ARGBType, AffineGet > rai = RealViews.affine( 
+			//		raiRaw, pixelRenderToPhysical.inverse() );
+			
+			raiList.add( Views.interval( Views.raster( raiRaw ), new long[] { TOP_left_x0, TOP_left_y0 }, new long[]{ TOP_left_x0 + width, TOP_left_y0 + height } ) );
+		}
+		
+		RandomAccessibleInterval< ARGBType > raiStack = Views.stack( raiList );
+		
+		ImagePlus ip = null;
+		ip = ImageJFunctions.wrap( raiStack, "warped_moving_image" );
+		
+		
+		/*
+		if ( isVirtual )
+		{
+			ip = ImageJFunctions.wrap( raiStack, "warped_moving_image" );
+		}
+		else if( nThreads == 1 )
+		{
+			ip = copyToImageStack( raiStack, raiStack );
+		}
+		else
+		{
+			System.out.println( "render with " + nThreads + " threads.");
+			final ImagePlusImgFactory< ARGBType > factory = new ImagePlusImgFactory< ARGBType >( new ARGBType() );
+
+			if ( outputInterval.numDimensions() == 3 )
+			{
+				// A bit of hacking to make slices the 4th dimension and
+				// channels the 3rd since that's how ImagePlusImgFactory does it
+				final long[] dimensions = new long[ 4 ];
+				dimensions[ 0 ] = outputInterval.dimension( 0 );	// x
+				dimensions[ 1 ] = outputInterval.dimension( 1 );	// y
+				dimensions[ 2 ] = numChannels; 					// c
+				dimensions[ 3 ] = outputInterval.dimension( 2 ); 	// z 
+				FinalInterval destIntervalPerm = new FinalInterval( dimensions );
+				RandomAccessibleInterval< ARGBType > img = copyToImageStack( 
+						raiStack,
+						destIntervalPerm, factory, nThreads );
+				ip = ((ImagePlusImg<ARGBType,?>)img).getImagePlus();
+			}
+			else if ( outputInterval.numDimensions() == 2 )
+			{
+				final long[] dimensions = new long[ 4 ];
+				dimensions[ 0 ] = outputInterval.dimension( 0 );	// x
+				dimensions[ 1 ] = outputInterval.dimension( 1 );	// y
+				dimensions[ 2 ] = numChannels; 					// c
+				dimensions[ 3 ] = 1; 							// z 
+				FinalInterval destIntervalPerm = new FinalInterval( dimensions );
+				RandomAccessibleInterval< ARGBType > img = copyToImageStack( 
+						Views.addDimension( Views.extendMirrorDouble( raiStack )),
+						destIntervalPerm, factory, nThreads );
+				ip = ((ImagePlusImg<ARGBType,?>)img).getImagePlus();
+			}
+		}
+
+		ip.getCalibration().pixelWidth = voxdim.dimension( 0 );
+		ip.getCalibration().pixelHeight = voxdim.dimension( 1 );
+		ip.getCalibration().pixelDepth = voxdim.dimension( 2 );
+		ip.getCalibration().setUnit( voxdim.unit() );
+		
+		if( offsetTransform != null )
+		{
+			ip.getCalibration().xOrigin = offsetTransform.get( 0, 0 );
+			ip.getCalibration().yOrigin = offsetTransform.get( 1, 1 );
+			ip.getCalibration().zOrigin = offsetTransform.get( 2, 2 );
+		}
+		
+		ip.setTitle( sources.get( movingSourceIndexList[ 0 ]).getSpimSource().getName() );
+		*/
+		return ip;
+	}
+	
 	private ArrayList<SpimDataMinimal> loadNewSources(MarsImageMetadata meta) {
 		ArrayList<SpimDataMinimal> spimArray = new ArrayList<SpimDataMinimal>();
-		for (BdvSource source : meta.getBdvSources()) {
+		for (MarsBdvSource source : meta.getBdvSources()) {
 			SpimDataMinimal spimData;
 			try {
 				spimData = new XmlIoSpimDataMinimal().load( source.getPathToXml() );
