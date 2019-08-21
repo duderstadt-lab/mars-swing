@@ -326,7 +326,7 @@ public class ImageMetadataPanel extends JPanel {
 	
 			@Override
 			public Object getValueAt(int rowIndex, int columnIndex) {
-				BdvSource source = imageMetadata.getBdvSource(BdvSourceList[rowIndex]);
+				MarsBdvSource source = imageMetadata.getBdvSource(BdvSourceList[rowIndex]);
 				switch(columnIndex) {
 				  case 0:
 					return BdvSourceList[rowIndex];
@@ -383,7 +383,7 @@ public class ImageMetadataPanel extends JPanel {
 			
 			@Override
 			public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-				BdvSource source = imageMetadata.getBdvSource(BdvSourceList[rowIndex]);
+				MarsBdvSource source = imageMetadata.getBdvSource(BdvSourceList[rowIndex]);
 				switch(columnIndex) {
 				  case 0:
 				    return;
@@ -487,7 +487,7 @@ public class ImageMetadataPanel extends JPanel {
 				if (!newSource.getText().equals("") && archive.getNumberOfImageMetadataRecords() != 0) {
 					imageMetadataRecordChanged = true;
 					File file = uiService.chooseFile(archive.getFile(), FileWidget.OPEN_STYLE);
-					BdvSource source = new BdvSource(newSource.getText().trim());
+					MarsBdvSource source = new MarsBdvSource(newSource.getText().trim());
 					source.setPathToXml(file.getAbsolutePath());
 					imageMetadata.putBdvSource(source);
 					updateBdvSourceList();
