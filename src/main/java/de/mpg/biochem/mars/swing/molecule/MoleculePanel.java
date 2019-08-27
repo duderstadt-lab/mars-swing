@@ -96,6 +96,11 @@ import ij.gui.ImageLayout;
 
 public class MoleculePanel extends JPanel implements BoundsChangedListener, MoleculeChangedListener {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	private JTextField UIDLabel, ImageMetadataUIDLabel;
 	
 	private JTabbedPane dataANDPlot;
@@ -140,7 +145,7 @@ public class MoleculePanel extends JPanel implements BoundsChangedListener, Mole
 
 	private JTextField moleculeSearchField;
 	
-	private int moleculeCount;
+	//private int moleculeCount;
 	
 	private Molecule DummyMolecule = new SingleMolecule("unknown");
 	
@@ -156,7 +161,6 @@ public class MoleculePanel extends JPanel implements BoundsChangedListener, Mole
 		DummyMolecule.setDataTable(new MarsTable());
 		DummyMolecule.setImageMetadataUID("XXXXXXXXXX");
 			
-		moleculeCount = archive.getNumberOfMolecules();
 		buildPanel();
 		
 		tagHotKeyList = new HashMap<String, String>();
@@ -827,19 +831,11 @@ public class MoleculePanel extends JPanel implements BoundsChangedListener, Mole
 		}
 		moleculeRecordChanged = false;
 		
-		//Update index table in case tags were changed
-		if (moleculeCount < archive.getNumberOfMolecules()) {
-			moleculeIndexTableModel.fireTableRowsInserted(moleculeCount - 1, archive.getNumberOfMolecules() - 1);
-			moleculeCount = archive.getNumberOfMolecules();
-		} else if (moleculeCount > archive.getNumberOfMolecules()) {
-			moleculeIndexTableModel.fireTableRowsDeleted(archive.getNumberOfMolecules() - 1, moleculeCount - 1);
-			moleculeCount = archive.getNumberOfMolecules();
-		}
-			
-		//Update all entries...
-		if (moleculeCount != 0) {
-			moleculeIndexTableModel.fireTableRowsUpdated(0, moleculeCount - 1);
-		}
+		//Update DataTable
+		DataTableModel.fireTableStructureChanged();
+		resizeColumnWidth(DataTable);
+		for (int i = 0; i < DataTable.getColumnCount(); i++)
+			DataTable.getColumnModel().getColumn(i).sizeWidthToFit();
 		
 		recordCount.setText(moleculeSorter.getViewRowCount() + " molecules");
 		recordCount.repaint();
@@ -852,12 +848,6 @@ public class MoleculePanel extends JPanel implements BoundsChangedListener, Mole
 		UIDLabel.repaint();
 		ImageMetadataUIDLabel.setText(molecule.getImageMetadataUID());
 		ImageMetadataUIDLabel.repaint();
-		
-		//Update DataTable
-		DataTableModel.fireTableStructureChanged();
-		resizeColumnWidth(DataTable);
-		for (int i = 0; i < DataTable.getColumnCount(); i++)
-			DataTable.getColumnModel().getColumn(i).sizeWidthToFit();
 		
 		//Update Parameter list
 		ParameterTableModel.fireTableDataChanged();
