@@ -86,9 +86,28 @@
 
 		<!-- NB: Deploy releases to the SciJava Maven repository. -->
 		<releaseProfiles>deploy-to-scijava</releaseProfiles>
+
+		<mars-core.version>1.0.0-beta-1</mars-core.version>
+		<jackson.version>2.9.9</jackson.version>
+		<jackson-annotations.version>${jackson.version}</jackson-annotations.version>
+		<jackson-core.version>${jackson.version}</jackson-core.version>
+		<jackson-dataformat-smile.version>${jackson.version}</jackson-dataformat-smile.version>
+		<jackson-databind.version>2.9.9.2</jackson-databind.version>
+		<org.apache.commons.codec.version>1.8</org.apache.commons.codec.version>
+		<base58-codec.version>1.2.0</base58-codec.version>
+		<decimal4j.version>1.0.3</decimal4j.version>
+		<junit-jupiter.version>5.2.0</junit-jupiter.version>
+		<junit-jupiter-api.version>${junit-jupiter.version}</junit-jupiter-api.version>
+		<junit-jupiter-engine.version>${junit-jupiter.version}</junit-jupiter-engine.version>
 	</properties>
 
 	<dependencies>
+		<dependency>
+			<groupId>de.mpg.biochem</groupId>
+			<artifactId>mars-core</artifactId>
+			<version>${mars-core.version}</version>
+		</dependency>
+
 		<dependency>
 			<groupId>net.imglib2</groupId>
 			<artifactId>imglib2-ij</artifactId>
@@ -98,43 +117,39 @@
 			<artifactId>imagej</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>sc.fiji</groupId>
-			<artifactId>fiji-lib</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<version>2.9.9.2</version>
+			<version>${jackson-databind.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-annotations</artifactId>
-			<version>2.9.9</version>
+			<version>${jackson-annotations.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-core</artifactId>
-			<version>2.9.9</version>
+			<version>${jackson-core.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
 			<artifactId>jackson-dataformat-smile</artifactId>
-			<version>2.9.9</version>
+			<version>${jackson-dataformat-smile.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.directory.studio</groupId>
 			<artifactId>org.apache.commons.codec</artifactId>
-			<version>1.8</version>
+			<version>${org.apache.commons.codec.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.chrylis</groupId>
 			<artifactId>base58-codec</artifactId>
-			<version>1.2.0</version>
+			<version>${base58-codec.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.decimal4j</groupId>
 			<artifactId>decimal4j</artifactId>
-			<version>1.0.3</version>
+			<version>${decimal4j.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>
@@ -143,16 +158,6 @@
 		<dependency>
 			<groupId>org.scijava</groupId>
 			<artifactId>scijava-ui-swing</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-api</artifactId>
-			<version>5.2.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-engine</artifactId>
-			<version>5.2.0</version>
 		</dependency>
 		<dependency>
 			<groupId>sc.fiji</groupId>
@@ -166,10 +171,18 @@
 			<groupId>sc.fiji</groupId>
 			<artifactId>bigdataviewer_fiji</artifactId>
 		</dependency>
+
 		<dependency>
-			<groupId>de.mpg.biochem</groupId>
-			<artifactId>mars-core</artifactId>
-			<version>LATEST</version>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-api</artifactId>
+			<version>${junit-jupiter-api.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-engine</artifactId>
+			<version>${junit-jupiter-engine.version}</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
