@@ -32,6 +32,7 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -59,13 +60,25 @@ import bdv.util.BdvStackSource;
 import bdv.viewer.Interpolation;
 import bdv.viewer.Source;
 import bdv.viewer.ViewerPanel;
+import bdv.viewer.render.DefaultMipmapOrdering;
+import bdv.viewer.render.MipmapOrdering;
+import bdv.viewer.render.MipmapOrdering.Level;
+import bdv.viewer.render.MipmapOrdering.MipmapHints;
+import bdv.viewer.render.Prefetcher;
+import bdv.viewer.state.SourceState;
 import bdv.viewer.state.ViewerState;
 import mpicbg.spim.data.SpimDataException;
 import de.mpg.biochem.mars.molecule.*;
 import ij.ImagePlus;
+import net.imglib2.Dimensions;
 import net.imglib2.Interval;
+import net.imglib2.RandomAccess;
+import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.RealRandomAccessible;
+import net.imglib2.cache.volatiles.CacheHints;
+import net.imglib2.cache.volatiles.LoadingStrategy;
+import net.imglib2.display.screenimage.awt.ARGBScreenImage;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.interpolation.randomaccess.NLinearInterpolatorFactory;
 import net.imglib2.realtransform.AffineTransform3D;
@@ -81,6 +94,7 @@ import mpicbg.spim.data.sequence.ViewId;
 import net.imglib2.interpolation.randomaccess.NLinearInterpolatorFactory;
 import net.imglib2.realtransform.AffineGet;
 import net.imglib2.realtransform.AffineRandomAccessible;
+import bdv.img.cache.VolatileCachedCellImg;
 
 public class MarsBdvFrame< T extends NumericType< T > & NativeType< T > > {
 	
@@ -330,6 +344,79 @@ public class MarsBdvFrame< T extends NumericType< T > & NativeType< T > > {
 		affine.set( affine.get( 1, 3 ) - target[1] + dim.getHeight()/2, 1, 3 );
 		
 		bdv.getBdvHandle().getViewerPanel().setCurrentViewerTransform( affine );
+		
+		ViewerState viewerState = bdv.getBdvHandle().getViewerPanel().getState();
+		//double[] screenScales = new double[] { 1, 0.75, 0.5, 0.25, 0.125 };
+		
+		//Precache timepoints
+		//final AffineTransform3D screenScaleTransform = screenScaleTransforms[ currentScreenScaleIndex ];
+		//final ArrayList< RandomAccessible< T > > renderList = new ArrayList<>();
+		final List< SourceState< ? > > sourceStates = viewerState.getSources();
+		final Source< ? > spimSource = sourceStates.get( 0 ).getSpimSource();
+		//final int t = viewerState.getCurrentTimepoint();
+
+		final MipmapOrdering ordering = MipmapOrdering.class.isInstance( spimSource ) ?
+			( MipmapOrdering ) spimSource : new DefaultMipmapOrdering( spimSource );
+
+		final AffineTransform3D screenTransform = new AffineTransform3D();
+		//viewerState.getViewerTransform( screenTransform );
+		//screenTransform.preConcatenate( screenScaleTransform );
+		SpimDataMinimal bdvSource = bdvSources.get(metaUID).get(0);
+		
+		ARGBScreenImage screenImage = new ARGBScreenImage( (int) dim.getWidth(), (int) dim.getHeight() );
+		
+		//int previousTimepoint = 0;
+		for ( int t = 0; t < bdvSource.getSequenceDescription().getTimePoints().size(); t++ ) {
+			
+			//final MipmapHints hints = ordering.getMipmapHints( screenTransform, t, previousTimepoint );
+			//final List< Level > levels = hints.getLevels();
+	
+			//Collections.sort( levels, MipmapOrdering.prefetchOrderComparator );
+			//for ( final Level l : levels ) {
+				//final CacheHints cacheHints = l.getPrefetchCacheHints();
+				prefetch( viewerState, t, spimSource, affine, 0, null, screenImage );
+			//}
+			//previousTimepoint = t;
+		}
+	}
+	
+	private static < T > void prefetch(
+			final ViewerState viewerState,
+			final int timepoint,
+			final Source< T > source,
+			final AffineTransform3D screenScaleTransform,
+			final int mipmapIndex,
+			final CacheHints prefetchCacheHints,
+			final Dimensions screenInterval )
+	{
+		//final int timepoint = viewerState.getCurrentTimepoint();
+		final RandomAccessibleInterval< T > img = source.getSource( timepoint, mipmapIndex );
+		
+		final VolatileCachedCellImg< ?, ? > cellImg = ( VolatileCachedCellImg< ?, ? > ) img;
+
+		CacheHints hints = prefetchCacheHints;
+		if ( hints == null )
+		{
+			final CacheHints d = cellImg.getDefaultCacheHints();
+			hints = new CacheHints( LoadingStrategy.VOLATILE, d.getQueuePriority(), false );
+		}
+		cellImg.setCacheHints( hints );
+		final int[] cellDimensions = new int[ 3 ];
+		cellImg.getCellGrid().cellDimensions( cellDimensions );
+		final long[] dimensions = new long[ 3 ];
+		cellImg.dimensions( dimensions );
+		final RandomAccess< ? > cellsRandomAccess = cellImg.getCells().randomAccess();
+
+		final Interpolation interpolation = viewerState.getInterpolation();
+
+		final AffineTransform3D sourceToScreen = new AffineTransform3D();
+		viewerState.getViewerTransform( sourceToScreen );
+		final AffineTransform3D sourceTransform = new AffineTransform3D();
+		source.getSourceTransform( timepoint, mipmapIndex, sourceTransform );
+		sourceToScreen.concatenate( sourceTransform );
+		sourceToScreen.preConcatenate( screenScaleTransform );
+
+		Prefetcher.fetchCells( sourceToScreen, cellDimensions, dimensions, screenInterval, interpolation, cellsRandomAccess );
 	}
 	
 	public void resetView() {
