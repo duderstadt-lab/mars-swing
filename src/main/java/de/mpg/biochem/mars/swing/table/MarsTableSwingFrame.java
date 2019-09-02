@@ -317,7 +317,7 @@ public class MarsTableSwingFrame implements ActionListener, MarsTableWindow {
 		//File file = new File(filename);
 		//file = marsTableService.getUIService().chooseFile(file, FileWidget.SAVE_STYLE);
 		
-		SaveDialog sd = new SaveDialog("Save Table", frame.getTitle(), ".csv");
+		SaveDialog sd = new SaveDialog("Save Table", frame.getTitle(), ".yamt");
         String file = sd.getFileName();
         if (file==null) return false;
         String path = sd.getDirectory() + file;
@@ -326,7 +326,7 @@ public class MarsTableSwingFrame implements ActionListener, MarsTableWindow {
 	}
 	
 	protected void exportToCSV() throws IOException {
-		SaveDialog sd = new SaveDialog("Export to CSV", frame.getTitle(), ".json");
+		SaveDialog sd = new SaveDialog("Export to CSV", frame.getTitle(), ".csv");
         String file = sd.getFileName();
         if (file==null) return;
         String path = sd.getDirectory() + file;
