@@ -94,7 +94,6 @@ public class MarsBdvFrame< T extends NumericType< T > & NativeType< T > > {
 	private String metaUID;
 	
 	private BdvHandlePanel bdv;
-	private List<BdvStackSource<?>> BDVs;
 	
 	private String xParameter, yParameter;
 	private MoleculeArchive<?,?,?> archive;
@@ -212,7 +211,7 @@ public class MarsBdvFrame< T extends NumericType< T > & NativeType< T > > {
 			bdvSources.put(meta.getUID(), loadNewSources(meta));
 		
 		for (SpimDataMinimal spimData : bdvSources.get(meta.getUID()))
-			BDVs = BdvFunctions.show( spimData, Bdv.options().addTo( bdv ) );
+			BdvFunctions.show( spimData, Bdv.options().addTo( bdv ) );
 		
 		InitializeViewerState.initBrightness( 0.001, 0.999, bdv.getViewerPanel(), bdv.getSetupAssignments() );
 	}

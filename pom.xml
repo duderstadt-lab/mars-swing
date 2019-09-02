@@ -92,13 +92,10 @@
 		<!-- NB: Deploy releases to the SciJava Maven repository. -->
 		<releaseProfiles>deploy-to-scijava</releaseProfiles>
 
-		<mars-core.version>1.0.0-beta-2-SNAPSHOT</mars-core.version>
+ 		<mars-core.version>1.0.0-beta-2-SNAPSHOT</mars-core.version>
 		<jackson.version>2.6.5</jackson.version>
-		<jackson-annotations.version>${jackson.version}</jackson-annotations.version>
 		<jackson-core.version>${jackson.version}</jackson-core.version>
 		<jackson-dataformat-smile.version>${jackson.version}</jackson-dataformat-smile.version>
-		<jackson-databind.version>2.9.9.2</jackson-databind.version>
-		<org.apache.commons.codec.version>1.8</org.apache.commons.codec.version>
 		<base58-codec.version>1.2.0</base58-codec.version>
 		<decimal4j.version>1.0.3</decimal4j.version>
 		<junit-jupiter.version>5.2.0</junit-jupiter.version>

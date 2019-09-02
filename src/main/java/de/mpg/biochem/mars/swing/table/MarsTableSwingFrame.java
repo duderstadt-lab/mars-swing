@@ -78,7 +78,8 @@ public class MarsTableSwingFrame implements ActionListener, MarsTableWindow {
 	JTable table;
 	JScrollPane scrollPane;
 	private AbstractTableModel tableModel;
-	private JMenuItem saveAsMenuItem = new JMenuItem("Save As", KeyEvent.VK_S);
+	private JMenuItem saveAsMenuItem = new JMenuItem("Save As YAMT", KeyEvent.VK_S);
+	private JMenuItem saveAsCSVMenuItem = new JMenuItem("Export to CSV", KeyEvent.VK_C);
 	private JMenuItem exportToJSONMenuItem = new JMenuItem("Export to JSON", KeyEvent.VK_E);
 	private JMenuItem renameMenuItem = new JMenuItem("Rename", KeyEvent.VK_R);
 	private JMenuItem copyMenuItem = new JMenuItem("Copy", KeyEvent.VK_C);
@@ -179,6 +180,7 @@ public class MarsTableSwingFrame implements ActionListener, MarsTableWindow {
 		fileMenu.setMnemonic(KeyEvent.VK_F);
 		
 		fileMenu.add(saveAsMenuItem);
+		fileMenu.add(saveAsCSVMenuItem);
 		fileMenu.add(exportToJSONMenuItem);
 		fileMenu.add(renameMenuItem);
 		
@@ -215,6 +217,7 @@ public class MarsTableSwingFrame implements ActionListener, MarsTableWindow {
 
 		// set action listeners
 		saveAsMenuItem.addActionListener(this);
+		saveAsCSVMenuItem.addActionListener(this);
 		exportToJSONMenuItem.addActionListener(this);
 		renameMenuItem.addActionListener(this);
 		
@@ -265,7 +268,19 @@ public class MarsTableSwingFrame implements ActionListener, MarsTableWindow {
 		} else if (e.getSource() == selectAllMenuItem) {
 			selectAll();
 		} else if (e.getSource() == saveAsMenuItem) {
-			saveAs();
+			try {
+				saveAs();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		} else if (e.getSource() == saveAsCSVMenuItem) {
+			try {
+				exportToCSV();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 		} else if (e.getSource() == exportToJSONMenuItem) {
 			try {
 				exportToJSON();
@@ -292,7 +307,7 @@ public class MarsTableSwingFrame implements ActionListener, MarsTableWindow {
     		new ResultsPlotter(plot_data, results.getName(), dialog.getGroupColumn());
 		}
 	}
-	protected boolean saveAs() {
+	protected boolean saveAs() throws IOException {
 		//String filename = frame.getTitle();
 		//if (!filename.endsWith(".csv") && !filename.endsWith(".CSV")) {
 		//	filename += ".csv";
@@ -306,9 +321,18 @@ public class MarsTableSwingFrame implements ActionListener, MarsTableWindow {
         String file = sd.getFileName();
         if (file==null) return false;
         String path = sd.getDirectory() + file;
-		results.saveAs(new File(path));
+		results.saveAsYAMT(path);
 		return true;
 	}
+	
+	protected void exportToCSV() throws IOException {
+		SaveDialog sd = new SaveDialog("Export to CSV", frame.getTitle(), ".json");
+        String file = sd.getFileName();
+        if (file==null) return;
+        String path = sd.getDirectory() + file;
+		results.saveAsCSV(path);
+	}
+	
 	protected void exportToJSON() throws IOException {
 		SaveDialog sd = new SaveDialog("Export to JSON", frame.getTitle(), ".json");
         String file = sd.getFileName();
