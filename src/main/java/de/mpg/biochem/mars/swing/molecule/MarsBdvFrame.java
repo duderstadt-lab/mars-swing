@@ -100,8 +100,15 @@ public class MarsBdvFrame< T extends NumericType< T > & NativeType< T > > {
 	
 	private final JFrame frame;
 	
+	//private double[] screenScales = new double[] { 1, 0.75, 0.5, 0.25, 0.125 };
+	private double[] screenScales = new double[] { 1 };
+	private AffineTransform3D[] screenScaleTransforms;
+	protected ARGBScreenImage[][] screenImages;
+	
 	private JTextField scaleField;
 	private JCheckBox autoUpdate;
+	private JCheckBox cacheTimepoints;
+	private JCheckBox cacheBlocking;
 	
 	private HashMap<String, ArrayList<SpimDataMinimal>> bdvSources;
 	
@@ -149,7 +156,7 @@ public class MarsBdvFrame< T extends NumericType< T > & NativeType< T > > {
 		goTo.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				Molecule molecule = molPane.getMolecule();
-				if (molecule != null && autoUpdate.isSelected()) {			
+				if (molecule != null) {			
 					MarsImageMetadata meta = archive.getImageMetadata(molecule.getImageMetadataUID());
 					if (!metaUID.equals(meta.getUID())) {
 						metaUID = meta.getUID();
@@ -165,6 +172,8 @@ public class MarsBdvFrame< T extends NumericType< T > & NativeType< T > > {
 		JPanel optionsPane = new JPanel();
 		
 		autoUpdate = new JCheckBox("Auto update", true);
+		cacheTimepoints = new JCheckBox("Cache timepoints", false);
+		cacheBlocking = new JCheckBox("Blocking", false);
 		
 		optionsPane.add(new JLabel("Zoom "));
 		
@@ -175,6 +184,16 @@ public class MarsBdvFrame< T extends NumericType< T > & NativeType< T > > {
 		
 		optionsPane.add(scaleField);
 		optionsPane.add(autoUpdate);
+		
+		//START Cache testing
+		optionsPane.add(cacheTimepoints);
+		optionsPane.add(cacheBlocking);
+		Bdv.options().screenScales(screenScales);
+		Bdv.options().targetRenderNanos(1_000_000_000);
+		screenScaleTransforms = new AffineTransform3D[ screenScales.length ];
+		screenImages = new ARGBScreenImage[ screenScales.length ][ 3 ];
+		Bdv.options().numRenderingThreads(8);
+		//END Cache testing
 		
 		bdv = new BdvHandlePanel( frame, Bdv.options().is2D() );
 		frame.add( bdv.getViewerPanel(), BorderLayout.CENTER );
@@ -190,6 +209,33 @@ public class MarsBdvFrame< T extends NumericType< T > & NativeType< T > > {
 		frame.setDefaultCloseOperation( WindowConstants.DISPOSE_ON_CLOSE );
 		
 		load();
+	}
+	
+	protected synchronized boolean checkResize() {
+		
+		final int componentW = bdv.getBdvHandle().getViewerPanel().getDisplay().getWidth();
+		final int componentH = bdv.getBdvHandle().getViewerPanel().getDisplay().getHeight();
+		if ( screenImages[ 0 ][ 0 ] == null || screenImages[ 0 ][ 0 ].dimension( 0 ) != ( int ) ( componentW * screenScales[ 0 ] ) || screenImages[ 0 ][ 0 ].dimension( 1 ) != ( int ) ( componentH  * screenScales[ 0 ] ) )
+		{
+			for ( int i = 0; i < screenScales.length; ++i )
+			{
+				final double screenToViewerScale = screenScales[ i ];
+				final int w = ( int ) ( screenToViewerScale * componentW );
+				final int h = ( int ) ( screenToViewerScale * componentH );
+				screenImages[ i ][ 0 ] = new ARGBScreenImage( w, h );
+				final AffineTransform3D scale = new AffineTransform3D();
+				final double xScale = ( double ) w / componentW;
+				final double yScale = ( double ) h / componentH;
+				scale.set( xScale, 0, 0 );
+				scale.set( yScale, 1, 1 );
+				scale.set( 0.5 * xScale - 0.5, 0, 3 );
+				scale.set( 0.5 * yScale - 0.5, 1, 3 );
+				screenScaleTransforms[ i ] = scale;
+			}
+
+			return true;
+		}
+		return false;
 	}
 	
 	public void load() {
@@ -260,6 +306,9 @@ public class MarsBdvFrame< T extends NumericType< T > & NativeType< T > > {
 			RandomAccessibleInterval< T > raiStack = Views.stack( raiList );
 			images[i] = ImageJFunctions.wrap( raiStack, "channel " + i );
 		}
+		if (numChannels == 1)
+			return images[0];
+		
 		//image arrays, boolean keep original.
 		ImagePlus ip = ij.plugin.RGBStackMerge.mergeChannels(images, false);
 		ip.setTitle("molecule " + molPane.getMolecule().getUID());
@@ -344,42 +393,38 @@ public class MarsBdvFrame< T extends NumericType< T > & NativeType< T > > {
 		affine.set( affine.get( 1, 3 ) - target[1] + dim.getHeight()/2, 1, 3 );
 		
 		bdv.getBdvHandle().getViewerPanel().setCurrentViewerTransform( affine );
-		
-		ViewerState viewerState = bdv.getBdvHandle().getViewerPanel().getState();
-		//double[] screenScales = new double[] { 1, 0.75, 0.5, 0.25, 0.125 };
-		
-		//Precache timepoints
-		//final AffineTransform3D screenScaleTransform = screenScaleTransforms[ currentScreenScaleIndex ];
-		//final ArrayList< RandomAccessible< T > > renderList = new ArrayList<>();
-		final List< SourceState< ? > > sourceStates = viewerState.getSources();
-		final Source< ? > spimSource = sourceStates.get( 0 ).getSpimSource();
-		//final int t = viewerState.getCurrentTimepoint();
 
-		final MipmapOrdering ordering = MipmapOrdering.class.isInstance( spimSource ) ?
-			( MipmapOrdering ) spimSource : new DefaultMipmapOrdering( spimSource );
-
-		final AffineTransform3D screenTransform = new AffineTransform3D();
-		//viewerState.getViewerTransform( screenTransform );
-		//screenTransform.preConcatenate( screenScaleTransform );
-		SpimDataMinimal bdvSource = bdvSources.get(metaUID).get(0);
-		
-		ARGBScreenImage screenImage = new ARGBScreenImage( (int) dim.getWidth(), (int) dim.getHeight() );
-		
-		//int previousTimepoint = 0;
-		for ( int t = 0; t < bdvSource.getSequenceDescription().getTimePoints().size(); t++ ) {
+		if (cacheTimepoints.isSelected()) {
+			ViewerState viewerState = bdv.getBdvHandle().getViewerPanel().getState();
 			
-			//final MipmapHints hints = ordering.getMipmapHints( screenTransform, t, previousTimepoint );
-			//final List< Level > levels = hints.getLevels();
-	
-			//Collections.sort( levels, MipmapOrdering.prefetchOrderComparator );
-			//for ( final Level l : levels ) {
-				//final CacheHints cacheHints = l.getPrefetchCacheHints();
-				prefetch( viewerState, t, spimSource, affine, 0, null, screenImage );
-			//}
-			//previousTimepoint = t;
+			//For the moment, we assume all sources have the same number of timepoints
+			int timepoints = bdvSources.get(metaUID).get( 0 ).getSequenceDescription().getTimePoints().size();
+			
+			//Pre-cache timepoints for all sources
+			checkResize();
+			final List< SourceState< ? > > sourceStates = viewerState.getSources();
+			
+			CacheHints hints = null;
+			if (this.cacheBlocking.isSelected())
+				hints = new CacheHints( LoadingStrategy.BLOCKING, 0, false );
+			else 
+				hints = new CacheHints( LoadingStrategy.VOLATILE, 0, false );
+				
+			for (int sourceIndex=0;sourceIndex<sourceStates.size();sourceIndex++) {
+				
+				final Source< ? > spimSource = sourceStates.get( sourceIndex ).getSpimSource();
+				
+				final ARGBScreenImage screenImage = screenImages[ 0 ][ 0 ];
+				
+				for ( int t = 0; t < timepoints; t++ ) {
+						prefetch( viewerState, t, spimSource, affine, 0, hints, screenImage );
+				}
+			}
 		}
 	}
 	
+	
+	//Added timepoint input..
 	private static < T > void prefetch(
 			final ViewerState viewerState,
 			final int timepoint,
@@ -389,7 +434,6 @@ public class MarsBdvFrame< T extends NumericType< T > & NativeType< T > > {
 			final CacheHints prefetchCacheHints,
 			final Dimensions screenInterval )
 	{
-		//final int timepoint = viewerState.getCurrentTimepoint();
 		final RandomAccessibleInterval< T > img = source.getSource( timepoint, mipmapIndex );
 		
 		final VolatileCachedCellImg< ?, ? > cellImg = ( VolatileCachedCellImg< ?, ? > ) img;
