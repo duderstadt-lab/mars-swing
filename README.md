@@ -1,8 +1,8 @@
 [![](https://travis-ci.com/duderstadt-lab/mars-swing.svg?branch=master)](https://travis-ci.com/duderstadt-lab/mars-swing)
 
-<p><img src="https://raw.githubusercontent.com/duderstadt-lab/mars-docs/master/images/MARS%20front%20page.png" width=“800"></p>
+<p><img src="https://raw.githubusercontent.com/duderstadt-lab/mars-docs/master/assets/MARS%20front%20page.png" width=“800"></p>
 
-**MARS** - **M**olecule **AR**chive **S**uite - A collection of ImageJ2 commands for single-molecule analysis.
+**Mars** - **M**olecule **AR**chive **S**uite - A framework for storage and reproducible processing of single-molecule datasets.
 
 How to install this project in your local Fiji
 ===========================================
