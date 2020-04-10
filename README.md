@@ -1,6 +1,8 @@
 [![](https://travis-ci.com/duderstadt-lab/mars-swing.svg?branch=master)](https://travis-ci.com/duderstadt-lab/mars-swing)
 
 <p><img src="https://raw.githubusercontent.com/duderstadt-lab/mars-docs/master/assets/MARS%20front%20page.png" width=“800"></p>
+ 
+ OBSOLETE - this repository is not longer being updated to work with the current mars-core. It has been replaced by mars-fx.
 
 **Mars** - **M**olecule **AR**chive **S**uite - A framework for storage and reproducible processing of single-molecule datasets.
 
